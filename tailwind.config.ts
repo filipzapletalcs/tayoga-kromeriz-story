@@ -44,6 +44,13 @@ export default {
           foreground: "hsl(var(--accent-foreground))",
           gold: "hsl(var(--accent-gold))",
         },
+        beige: {
+          warm: "hsl(var(--warm-beige))",
+          DEFAULT: "hsl(var(--accent-gold))",
+        },
+        brown: {
+          deep: "hsl(var(--deep-brown))",
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",

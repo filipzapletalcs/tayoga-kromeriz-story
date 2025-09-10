@@ -17,23 +17,25 @@ All colors MUST be HSL.
     --popover: 40 15% 99%;
     --popover-foreground: 24 15% 20%;
 
-    --primary: 153 25% 45%;
+    --primary: 42 65% 55%;
     --primary-foreground: 40 15% 99%;
 
-    --secondary: 35 20% 88%;
+    --secondary: 42 35% 85%;
     --secondary-foreground: 24 15% 20%;
 
-    --muted: 35 15% 92%;
+    --muted: 42 25% 92%;
     --muted-foreground: 24 8% 55%;
 
-    --accent: 40 35% 85%;
+    --accent: 42 45% 88%;
     --accent-foreground: 24 15% 20%;
 
-    --hero-gradient: linear-gradient(135deg, hsl(35 25% 92%) 0%, hsl(153 15% 88%) 100%);
-    --section-gradient: linear-gradient(180deg, hsl(40 20% 98%) 0%, hsl(35 15% 95%) 100%);
+    --hero-gradient: linear-gradient(135deg, hsl(42 35% 92%) 0%, hsl(42 25% 88%) 100%);
+    --section-gradient: linear-gradient(180deg, hsl(42 20% 98%) 0%, hsl(42 15% 95%) 100%);
     --card-shadow: 0 8px 30px -8px hsl(24 15% 20% / 0.08);
     --card-hover-shadow: 0 12px 40px -10px hsl(24 15% 20% / 0.12);
-    --accent-gold: 42 85% 65%;
+    --accent-gold: 42 75% 65%;
+    --warm-beige: 42 55% 78%;
+    --deep-brown: 24 35% 25%;
     --text-warm: 24 15% 25%;
 
     --destructive: 0 84.2% 60.2%;
@@ -72,7 +74,7 @@ All colors MUST be HSL.
     --popover: 24 20% 10%;
     --popover-foreground: 40 15% 95%;
 
-    --primary: 153 30% 55%;
+    --primary: 42 70% 60%;
     --primary-foreground: 24 20% 8%;
 
     --secondary: 24 15% 15%;
@@ -84,7 +86,7 @@ All colors MUST be HSL.
     --accent: 24 20% 20%;
     --accent-foreground: 40 15% 95%;
 
-    --hero-gradient: linear-gradient(135deg, hsl(24 20% 12%) 0%, hsl(153 20% 15%) 100%);
+    --hero-gradient: linear-gradient(135deg, hsl(24 20% 12%) 0%, hsl(42 20% 15%) 100%);
     --section-gradient: linear-gradient(180deg, hsl(24 20% 8%) 0%, hsl(24 18% 12%) 100%);
     --text-warm: 40 15% 90%;
 
@@ -163,6 +165,49 @@ All colors MUST be HSL.
     opacity: 1;
     transform: translateY(0);
   }
+
+  .sticky-section {
+    position: sticky;
+    top: 80px;
+    z-index: 10;
+  }
+
+  .parallax-slow {
+    transform: translateY(var(--scroll-y, 0) * 0.5px);
+  }
+
+  .parallax-fast {
+    transform: translateY(var(--scroll-y, 0) * -0.3px);
+  }
+
+  .floating-element {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .floating-element:nth-child(2n) {
+    animation-delay: -2s;
+  }
+
+  .floating-element:nth-child(3n) {
+    animation-delay: -4s;
+  }
+
+  .image-stack {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .image-stack img {
+    transition: all 0.3s ease;
+  }
+
+  .image-stack:hover img:first-child {
+    transform: translateX(-10px) rotate(-2deg);
+  }
+
+  .image-stack:hover img:last-child {
+    transform: translateX(10px) rotate(2deg);
+  }
 }
 
 @keyframes fade-in-up {
@@ -195,5 +240,25 @@ All colors MUST be HSL.
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes gentle-pulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
   }
 }
