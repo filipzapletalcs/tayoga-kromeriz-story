@@ -166,6 +166,16 @@ All colors MUST be HSL.
     transform: translateY(0);
   }
 
+  .service-card {
+    opacity: 1 !important;
+    transform: translateY(0) scale(1) !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .service-card.hovered {
+    transform: translateY(-8px) scale(1.02) !important;
+  }
+
   .sticky-section {
     position: sticky;
     top: 80px;

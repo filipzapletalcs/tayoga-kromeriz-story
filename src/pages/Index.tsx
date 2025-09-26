@@ -1,7 +1,11 @@
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import EnhancedAbout from '@/components/EnhancedAbout';
-import InteractiveServices from '@/components/InteractiveServices';
+import Instructor from '@/components/Instructor';
+import IyengarQuote from '@/components/IyengarQuote';
+import ExpectOnLessons from '@/components/ExpectOnLessons';
+import StudioUnique from '@/components/StudioUnique';
+import Schedule from '@/components/Schedule';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 
@@ -12,7 +16,11 @@ const Index = () => {
       <main>
         <Hero />
         <EnhancedAbout />
-        <InteractiveServices />
+        <Instructor />
+        <ExpectOnLessons />
+        <IyengarQuote />
+        <StudioUnique />
+        <Schedule />
         <Contact />
       </main>
       <Footer />

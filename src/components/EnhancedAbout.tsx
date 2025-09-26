@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import yogaPose from '@/assets/yoga-pose.jpg';
 import heroImage from '@/assets/hero-yoga-studio.jpg';
 
 const EnhancedAbout = () => {
@@ -44,7 +43,7 @@ const EnhancedAbout = () => {
   }, []);
 
   return (
-    <section id="about" ref={sectionRef} className="relative min-h-screen py-20 gradient-section overflow-hidden">
+    <section id="about" ref={sectionRef} className="relative py-16 gradient-section overflow-hidden">
       {/* Floating decorative elements */}
       <div className="absolute inset-0 pointer-events-none">
         <div 
@@ -68,12 +67,12 @@ const EnhancedAbout = () => {
             <div className="scroll-reveal">
               <h2 className="text-5xl lg:text-6xl font-serif font-bold text-foreground mb-8 leading-tight">
                 Naše cesta k
-                <span className="text-primary block">Iyengar józe</span>
+                <span className="text-primary block">józe</span>
               </h2>
               
               <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-                Studio Tayoga vzniklo z lásky k józe a touhy sdílet tuto transformativní praxi 
-                s komunitou v Kroměříži. Specializujeme se na metodu Iyengar jógy, která klade 
+                Studio TaYoga vzniklo z lásky k józe a touhy sdílet tuto transformativní praxi
+                s naší stále se rozrůstající jógovou rodinou. Specializujeme se na metodu jógy, která klade
                 důraz na preciznost, vyrovnání a postupné budování síly.
               </p>
 
@@ -91,10 +90,10 @@ const EnhancedAbout = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-foreground mb-3">
-                      Co je Iyengar jóga?
+                      Co je naše jóga?
                     </h3>
                     <p className="text-muted-foreground leading-relaxed">
-                      Metoda vyvinutá B.K.S. Iyengarem, která se zaměřuje na přesné provedení 
+                      Metoda, která se zaměřuje na přesné provedení 
                       ásán s pomocí podpůrných pomůcek. Vhodná pro všechny věkové kategorie 
                       a úrovně flexibility.
                     </p>
@@ -125,13 +124,13 @@ const EnhancedAbout = () => {
           <div className="scroll-reveal">
             <div className="relative h-[800px]">
               {/* Main large image */}
-              <div 
+              <div
                 className="absolute inset-0 rounded-2xl overflow-hidden card-shadow"
                 style={{ transform: `translateY(${scrollY * 0.1}px)` }}
               >
-                <img 
-                  src={yogaPose}
-                  alt="Iyengar jóga pozice"
+                <img
+                  src="/ee1fb7e5-68a6-4391-adcc-02c334ca1998.JPG"
+                  alt="Jóga v přírodě u vodopádu"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent"></div>
@@ -165,14 +164,6 @@ const EnhancedAbout = () => {
                 }}
               />
 
-              {/* Text overlay on image */}
-              <div 
-                className="absolute bottom-8 left-8 right-8 bg-background/90 backdrop-blur-md p-6 rounded-xl"
-                style={{ transform: `translateY(${scrollY * -0.02}px)` }}
-              >
-                <p className="text-sm text-muted-foreground mb-2">Překrásné prostředí</p>
-                <h4 className="text-lg font-semibold text-foreground">Studio v srdci Kroměříže</h4>
-              </div>
             </div>
           </div>
         </div>

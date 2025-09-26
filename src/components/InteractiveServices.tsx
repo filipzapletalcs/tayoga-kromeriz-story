@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { HoverCard, FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/micro-interactions';
 
 const services = [
   {
@@ -80,7 +81,7 @@ const InteractiveServices = () => {
   }, []);
 
   return (
-    <section id="services" ref={sectionRef} className="relative py-20 bg-background overflow-hidden">
+    <section id="services" ref={sectionRef} className="relative py-16 bg-background overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 pointer-events-none">
         <div 
@@ -104,7 +105,7 @@ const InteractiveServices = () => {
               </h2>
               <div className="w-20 h-1 bg-primary mb-6"></div>
               <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-                Nabízíme rozmanité lekce Iyengar jógy přizpůsobené různým úrovním 
+                Nabízíme rozmanité lekce jógy přizpůsobené různým úrovním 
                 a potřebám našich studentů.
               </p>
               
@@ -133,20 +134,17 @@ const InteractiveServices = () => {
 
           {/* Interactive Cards */}
           <div className="lg:col-span-8">
-            <div className="grid md:grid-cols-2 gap-6">
+            <StaggerContainer className="grid md:grid-cols-2 gap-6">
               {services.map((service, index) => (
-                <Card 
-                  key={index} 
-                  className={`scroll-reveal bg-card border-border card-shadow hover:card-hover-shadow transition-all duration-500 hover:-translate-y-2 cursor-pointer group ${
-                    activeCard === index ? 'ring-2 ring-primary scale-105' : ''
-                  }`}
-                  onMouseEnter={() => setActiveCard(index)}
-                  onMouseLeave={() => setActiveCard(null)}
-                  style={{ 
-                    transform: activeCard === index ? 'scale(1.02)' : 'scale(1)',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
+                <StaggerItem key={index}>
+                  <HoverCard>
+                    <Card 
+                      className={`scroll-reveal service-card bg-card border-border card-shadow hover:card-hover-shadow cursor-pointer group ${
+                        activeCard === index ? 'ring-2 ring-primary hovered' : ''
+                      }`}
+                      onMouseEnter={() => setActiveCard(index)}
+                      onMouseLeave={() => setActiveCard(null)}
+                    >
                   <CardHeader className="relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full -translate-y-10 translate-x-10 group-hover:scale-150 transition-transform duration-500"></div>
                     <CardTitle className="text-xl font-semibold text-foreground relative z-10">
@@ -198,14 +196,16 @@ const InteractiveServices = () => {
                       Rezervovat
                     </Button>
                   </CardContent>
-                </Card>
+                    </Card>
+                  </HoverCard>
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerContainer>
           </div>
         </div>
 
         {/* Enhanced Schedule Section */}
-        <div className="mt-20 scroll-reveal">
+        <div className="mt-16 scroll-reveal">
           <div className="bg-gradient-to-r from-accent/50 via-primary/10 to-accent-gold/20 p-8 rounded-2xl card-shadow backdrop-blur-sm border border-primary/10">
             <div className="text-center mb-8">
               <h3 className="text-3xl font-serif font-semibold text-foreground mb-4">
