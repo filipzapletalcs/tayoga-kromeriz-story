@@ -15,7 +15,8 @@ const Schedule = () => {
       { time: '10:00 - 11:30', type: 'kurz', label: 'Kurz začátečníci' }
     ]},
     { day: 'Čtvrtek', slots: [
-      { time: '16:15 - 17:45', type: 'kurz', label: 'Kurz pokročilí' }
+      { time: '16:15 - 17:45', type: 'kurz', label: 'Kurz pokročilí' },
+      { time: '18:15 - 19:30', type: 'kurz', label: 'Otevřená lekce' }
     ]},
     { day: 'Pátek', slots: [] },
   ];
@@ -110,10 +111,12 @@ const Schedule = () => {
                     ))}
                   </div>
 
-                  <Alert className="mt-6 bg-primary/5 border-primary/20 dark:bg-primary/10">
+                  <Alert className="mt-6 bg-primary/10 border-primary/30 dark:bg-primary/20">
                     <Info className="h-4 w-4 text-primary" />
-                    <AlertDescription className="text-sm text-muted-foreground">
-                      <strong>Studio TaYoga</strong> ve Vodní ulici v Kroměříži
+                    <AlertDescription className="text-sm font-medium">
+                      <strong className="text-foreground">Rezervace předem nutná!</strong>
+                      <br />
+                      <span className="text-muted-foreground">Na otevřené lekce se prosím hlaste telefonicky nebo emailem.</span>
                     </AlertDescription>
                   </Alert>
                 </CardContent>

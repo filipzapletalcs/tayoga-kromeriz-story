@@ -179,7 +179,7 @@ const Contact = () => {
                         <p>Pondělí: Zavřeno</p>
                         <p>Úterý: 18:00 - 19:30</p>
                         <p>Středa: 8:00 - 9:30, 10:00 - 11:30</p>
-                        <p>Čtvrtek: 16:15 - 17:45</p>
+                        <p>Čtvrtek: 16:15 - 17:45, 18:15 - 19:30</p>
                         <p>Pátek: Zavřeno</p>
                       </div>
                     </div>

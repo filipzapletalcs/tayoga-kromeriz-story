@@ -71,7 +71,7 @@ const EnhancedAbout = () => {
               </h2>
               
               <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-                Studio TaYoga vzniklo z lásky k józe a touhy sdílet tuto transformativní praxi
+                Studio TaYoga vzniklo z lásky k józe a touhy sdílet tuto praxi
                 s naší stále se rozrůstající jógovou rodinou. Specializujeme se na metodu jógy, která klade
                 důraz na preciznost, vyrovnání a postupné budování síly.
               </p>
@@ -90,7 +90,7 @@ const EnhancedAbout = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-foreground mb-3">
-                      Co je naše jóga?
+                      Jak vypadá naše jóga?
                     </h3>
                     <p className="text-muted-foreground leading-relaxed">
                       Metoda, která se zaměřuje na přesné provedení 
@@ -112,7 +112,7 @@ const EnhancedAbout = () => {
                     </h3>
                     <p className="text-muted-foreground leading-relaxed">
                       Věříme, že jóga je cesta k sebepoznání. V našem studiu vytváříme prostředí, 
-                      kde se každý cítí vítán a podporován na své osobní cestě k zdraví a vnitřnímu klidu.
+                      kde se každý cítí vítán a podporován na své osobní cestě ke zdraví a vnitřnímu klidu.
                     </p>
                   </div>
                 </div>
