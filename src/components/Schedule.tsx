@@ -96,7 +96,7 @@ const Schedule = () => {
                                   <span className="text-muted-foreground">{slot.time}</span>
                                   <Badge
                                     variant={slot.type === 'open' ? 'default' : 'secondary'}
-                                    className={slot.type === 'open' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : 'bg-accent text-accent-foreground'}
+                                    className={slot.type === 'open' ? 'bg-primary text-primary-foreground hover:bg-primary/90 text-center' : 'bg-accent text-accent-foreground text-center'}
                                   >
                                     {slot.label}
                                   </Badge>

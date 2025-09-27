@@ -50,10 +50,10 @@ const Hero = () => {
                 </Button>
               </motion.div>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   variant="outline"
-                  onClick={() => scrollToSection('services')}
+                  onClick={() => scrollToSection('schedule')}
                   className="text-lg px-8 py-6"
                 >
                   Prozkoumat lekce
