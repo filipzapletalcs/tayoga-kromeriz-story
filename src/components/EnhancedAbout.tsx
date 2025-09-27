@@ -43,7 +43,7 @@ const EnhancedAbout = () => {
   }, []);
 
   return (
-    <section id="about" ref={sectionRef} className="relative py-16 gradient-section overflow-x-clip">
+    <section id="about" ref={sectionRef} className="relative py-16 gradient-section overflow-hidden">
       {/* Floating decorative elements */}
       <div className="absolute inset-0 pointer-events-none">
         <div 

@@ -5,7 +5,7 @@ import { Quote } from 'lucide-react';
 
 const IyengarQuote = () => {
   return (
-    <section className="py-20 px-4 bg-gradient-to-br from-background via-secondary/5 to-background dark:from-card/50 dark:via-background dark:to-card/50 overflow-x-clip">
+    <section className="py-20 px-4 bg-gradient-to-br from-background via-secondary/5 to-background dark:from-card/50 dark:via-background dark:to-card/50 overflow-hidden">
       <div className="max-w-6xl mx-auto">
         <ScrollReveal variants={fadeUpVariants}>
           <div className="relative">
