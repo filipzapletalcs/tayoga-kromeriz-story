@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/micro-interactions';
+import { Award, Heart, BookOpen, Calendar } from 'lucide-react';
 import instructorImage from '@/assets/IMG_4946 2.webp';
 
 const Instructor = () => {
@@ -48,22 +49,34 @@ const Instructor = () => {
     {
       year: "Od 2018",
       title: "Lektorka jógy",
-      description: "Na podnět mé vzácné učitelky a přítelkyně Lidmily Brabcové jsem se stala lektorkou jógy"
+      description: "Na podnět mé vzácné učitelky a přítelkyně Lidmily Brabcové jsem se stala lektorkou jógy",
+      icon: Heart,
+      color: "bg-primary/20 group-hover:bg-primary/30",
+      iconColor: "text-primary"
     },
     {
       year: "Současnost",
       title: "Učitel ve výcviku jógy",
-      description: "V současné době jsem učitelem ve výcviku jógy. Výcvik na učitele trvá v případě jógy léta a adepti k němu přistupují až po vlastní mnohaleté praxi"
+      description: "V současné době jsem učitelem ve výcviku jógy. Výcvik na učitele trvá v případě jógy léta a adepti k němu přistupují až po vlastní mnohaleté praxi",
+      icon: Award,
+      color: "bg-accent-gold/30 group-hover:bg-accent-gold/40",
+      iconColor: "text-accent-gold"
     },
     {
       year: "1999-2021",
       title: "Studium u Edgara Ta",
-      description: "Tajemství lidského těla i duše byly mými tématy odjakživa. Edgar Ta vytvořil metodiku unikátních masáží, předmětem studia byla také ajurvéda a východní nauky, přírodní medicína, zásady zdravého stravování, principy přírodních zákonitostí a psychologie člověka"
+      description: "Tajemství lidského těla i duše byly mými tématy odjakživa. Můj učitel Mistr Edgar Ta, který významně ovlivnil můj život, vytvořil metodiku unikátních masáží, předmětem studia byla také ajurvéda a východní nauky, přírodní medicína, zásady zdravého stravování, principy přírodních zákonitostí a psychologie člověka",
+      icon: BookOpen,
+      color: "bg-secondary/30 group-hover:bg-secondary/40",
+      iconColor: "text-foreground"
     },
     {
-      year: "Vzdělání",
-      title: "Vzdělání",
-      description: "Vystudovala jsem ekonomickou školu a sociální pedagogiku"
+      year: "2000s",
+      title: "Formální vzdělání",
+      description: "Vystudovala jsem ekonomickou školu a sociální pedagogiku",
+      icon: Calendar,
+      color: "bg-primary/10 group-hover:bg-primary/20",
+      iconColor: "text-primary"
     }
   ];
 
@@ -77,11 +90,11 @@ const Instructor = () => {
     <section id="instructor" ref={sectionRef} className="py-16 bg-background">
       <div className="container mx-auto px-6">
         {/* Desktop layout with sticky */}
-        <div className="lg:flex lg:gap-12 lg:relative">
+        <div className="lg:flex lg:gap-12">
           {/* Left column - STICKY */}
-          <div className="lg:w-[40%] mb-12 lg:mb-0 lg:relative">
-            <div className="lg:sticky lg:top-24 lg:bottom-auto">
-              <h2 className="text-5xl lg:text-6xl font-serif font-bold text-foreground mb-6 leading-tight">
+          <div className="lg:w-[40%] mb-12 lg:mb-0">
+            <div className="lg:sticky lg:top-24">
+                <h2 className="text-5xl lg:text-6xl font-serif font-bold text-foreground mb-6 leading-tight">
                 O naší
                 <span className="text-primary block">lektorce</span>
               </h2>
@@ -121,16 +134,22 @@ const Instructor = () => {
               {education.map((item, index) => (
                 <StaggerItem key={index}>
                   <FadeIn>
-                    <Card className="scroll-reveal bg-card border-border card-shadow hover:card-hover-shadow transition-all duration-300 group">
-                      <CardContent className="p-8">
+                    <Card className="scroll-reveal bg-card border-border card-shadow hover:card-hover-shadow transition-all duration-300 group hover:scale-[1.02] relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-bl-full" />
+                      <CardContent className="p-8 relative">
                         <div className="flex items-start space-x-6">
                           <div className="flex-shrink-0">
-                            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                              <span className="text-xs font-bold text-primary">{item.year}</span>
+                            <div className={`w-16 h-16 ${item.color} rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                              <item.icon className={`w-7 h-7 ${item.iconColor}`} />
                             </div>
                           </div>
                           <div className="flex-grow">
-                            <h3 className="text-xl font-semibold text-foreground mb-2">
+                            <div className="flex items-center gap-3 mb-3">
+                              <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">
+                                {item.year}
+                              </span>
+                            </div>
+                            <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                               {item.title}
                             </h3>
                             <p className="text-muted-foreground leading-relaxed">
@@ -147,22 +166,30 @@ const Instructor = () => {
 
             {/* Philosophy quote with image */}
             <div className="mt-8 scroll-reveal">
-              <Card className="bg-gradient-to-r from-accent/50 via-primary/10 to-accent-gold/20 card-shadow backdrop-blur-sm border border-primary/10 overflow-hidden">
+              <Card className="bg-gradient-to-br from-primary/5 via-accent/10 to-secondary/5 card-shadow backdrop-blur-sm border-2 border-primary/20 overflow-hidden group hover:card-hover-shadow transition-all duration-500">
                 <CardContent className="p-0">
-                  <div className="relative">
+                  <div className="relative overflow-hidden">
                     <img
                       src={instructorImage}
                       alt="Barbora Zapletalová - lektorka jógy"
-                      className="w-full h-[400px] object-cover object-top"
+                      className="w-full h-[450px] object-cover object-top transition-transform duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/50 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-8 text-center">
-                      <blockquote className="text-3xl font-serif text-foreground italic mb-3">
-                        "Tělo je chrám duše"
-                      </blockquote>
-                      <p className="text-lg text-muted-foreground">
-                        Tato filozofie prostupuje celou naší praxí
-                      </p>
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+
+                    {/* Decorative elements */}
+                    <div className="absolute top-4 right-4 w-20 h-20 bg-primary/20 rounded-full blur-xl animate-pulse" />
+                    <div className="absolute top-12 left-8 w-16 h-16 bg-accent/20 rounded-full blur-xl animate-pulse" style={{ animationDelay: '1s' }} />
+
+                    <div className="absolute bottom-0 left-0 right-0 p-10 text-center">
+                      <div className="backdrop-blur-md bg-background/90 rounded-2xl p-8 border border-primary/10">
+                        <blockquote className="text-3xl md:text-4xl font-serif text-foreground italic mb-4 leading-tight">
+                          "Tělo je chrám duše"
+                        </blockquote>
+                        <div className="w-16 h-0.5 bg-primary mx-auto mb-4" />
+                        <p className="text-lg text-muted-foreground">
+                          Tato filozofie prostupuje celou naší praxí
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </CardContent>

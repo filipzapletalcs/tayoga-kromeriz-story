@@ -5,7 +5,7 @@ import { Quote } from 'lucide-react';
 
 const IyengarQuote = () => {
   return (
-    <section className="py-20 px-4 bg-gradient-to-br from-background via-secondary/5 to-background dark:from-card/50 dark:via-background dark:to-card/50">
+    <section className="py-20 px-4 bg-gradient-to-br from-background via-secondary/5 to-background dark:from-card/50 dark:via-background dark:to-card/50 overflow-x-clip">
       <div className="max-w-6xl mx-auto">
         <ScrollReveal variants={fadeUpVariants}>
           <div className="relative">
@@ -63,7 +63,7 @@ const IyengarQuote = () => {
 
             {/* Decorative elements */}
             <motion.div
-              className="absolute -top-4 -right-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl"
+              className="absolute -top-4 right-0 lg:-right-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl"
               animate={{
                 scale: [1, 1.2, 1],
                 opacity: [0.5, 0.3, 0.5]
@@ -75,7 +75,7 @@ const IyengarQuote = () => {
               }}
             />
             <motion.div
-              className="absolute -bottom-4 -left-4 w-32 h-32 bg-accent/10 rounded-full blur-2xl"
+              className="absolute -bottom-4 left-0 lg:-left-4 w-32 h-32 bg-accent/10 rounded-full blur-2xl"
               animate={{
                 scale: [1, 1.1, 1],
                 opacity: [0.3, 0.5, 0.3]

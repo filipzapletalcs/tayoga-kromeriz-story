@@ -43,7 +43,7 @@ const EnhancedAbout = () => {
   }, []);
 
   return (
-    <section id="about" ref={sectionRef} className="relative py-16 gradient-section overflow-hidden">
+    <section id="about" ref={sectionRef} className="relative py-16 gradient-section overflow-x-clip">
       {/* Floating decorative elements */}
       <div className="absolute inset-0 pointer-events-none">
         <div 
@@ -138,7 +138,7 @@ const EnhancedAbout = () => {
 
               {/* Floating secondary image */}
               <div 
-                className="absolute top-20 -right-10 w-64 h-80 rounded-xl overflow-hidden card-hover-shadow z-10 border-4 border-background"
+                className="absolute top-20 right-0 lg:-right-10 w-64 h-80 rounded-xl overflow-hidden card-hover-shadow z-10 border-4 border-background"
                 style={{ transform: `translateY(${scrollY * -0.05}px) rotate(5deg)` }}
               >
                 <img 
@@ -150,14 +150,14 @@ const EnhancedAbout = () => {
 
               {/* Decorative elements */}
               <div 
-                className="absolute -bottom-8 -left-8 w-32 h-32 bg-primary/20 rounded-full"
+                className="absolute -bottom-8 left-0 lg:-left-8 w-32 h-32 bg-primary/20 rounded-full"
                 style={{ 
                   transform: `translateY(${scrollY * 0.08}px) scale(${1 + scrollY * 0.0002})`,
                   animation: 'gentle-pulse 4s ease-in-out infinite'
                 }}
               />
               <div 
-                className="absolute -top-8 -right-8 w-24 h-24 bg-accent-gold/30 rounded-full"
+                className="absolute -top-8 right-0 lg:-right-8 w-24 h-24 bg-accent-gold/30 rounded-full"
                 style={{ 
                   transform: `translateY(${scrollY * -0.06}px) scale(${1 + scrollY * 0.0001})`,
                   animation: 'gentle-pulse 3s ease-in-out infinite'

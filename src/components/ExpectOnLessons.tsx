@@ -42,19 +42,19 @@ const ExpectOnLessons = () => {
           </div>
         </ScrollReveal>
 
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 gap-6 mb-12">
           {features.map((feature, index) => (
             <ScrollReveal key={index} delay={index * 0.1} variants={fadeUpVariants}>
-              <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
-                <Card className="h-full bg-card/80 backdrop-blur-sm border-primary/10 hover:shadow-lg transition-all">
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <feature.icon className="w-6 h-6 text-primary" />
+              <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }} className="h-full">
+                <Card className="h-full bg-card/90 backdrop-blur-sm border-primary/10 hover:shadow-xl hover:border-primary/30 transition-all duration-300 min-h-[180px]">
+                  <CardContent className="p-8 h-full flex items-center">
+                    <div className="flex items-start gap-5 w-full">
+                      <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <feature.icon className="w-7 h-7 text-primary" />
                       </div>
-                      <div>
-                        <h3 className="text-xl font-semibold text-foreground mb-2">{feature.title}</h3>
-                        <p className="text-muted-foreground">{feature.description}</p>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-foreground mb-3">{feature.title}</h3>
+                        <p className="text-muted-foreground leading-relaxed text-[15px]">{feature.description}</p>
                       </div>
                     </div>
                   </CardContent>

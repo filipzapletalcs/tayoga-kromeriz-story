@@ -2,11 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent horizontal scrolling on mobile */
-html, body {
-  overflow-x: hidden;
-  max-width: 100%;
-}
+/* Prevent horizontal scrolling on mobile - removed to fix sticky elements */
+/* overflow-x: hidden breaks position: sticky, so we'll handle overflow in individual components */
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
