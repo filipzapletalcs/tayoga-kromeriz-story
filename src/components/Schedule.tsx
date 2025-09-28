@@ -1,12 +1,37 @@
 import React from 'react';
-import { Calendar, Clock, CreditCard, Info } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, CreditCard, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollReveal, fadeUpVariants } from '@/components/ui/scroll-animations';
 import { motion } from 'framer-motion';
+import { Calendar } from '@/components/ui/calendar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 
 const Schedule = () => {
+  // Responsivní počet kalendářů: na mobilu 1, na větších 2
+  const initialMonths = typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches ? 1 : 2;
+  const [months, setMonths] = React.useState(initialMonths);
+  const [active, setActive] = React.useState<'tue' | 'wed' | 'thu'>('tue');
+  const order: Array<'tue'|'wed'|'thu'> = ['tue','wed','thu'];
+  const go = (dir: -1 | 1) => {
+    const idx = order.indexOf(active);
+    const next = (idx + dir + order.length) % order.length;
+    setActive(order[next]);
+  };
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(max-width: 640px)');
+    const update = () => setMonths(mq.matches ? 1 : 2);
+    update();
+    // @ts-ignore older browsers fallback
+    mq.addEventListener ? mq.addEventListener('change', update) : mq.addListener(update);
+    return () => {
+      // @ts-ignore older browsers fallback
+      mq.removeEventListener ? mq.removeEventListener('change', update) : mq.removeListener(update);
+    };
+  }, []);
   const weeklySchedule = [
     { day: 'Pondělí', slots: [] },
     { day: 'Úterý', slots: [{ time: '18:00 - 19:30', type: 'kurz', label: 'Kurz pokročilí' }] },
@@ -71,7 +96,7 @@ const Schedule = () => {
                 <Card className="h-full shadow-lg hover:shadow-xl transition-all duration-300 bg-card/90 backdrop-blur-sm border-primary/10">
                 <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-t-lg">
                   <CardTitle className="flex items-center gap-2 text-2xl font-serif text-foreground">
-                    <Calendar className="w-6 h-6 text-primary" />
+                    <CalendarIcon className="w-6 h-6 text-primary" />
                     Týdenní rozvrh
                   </CardTitle>
                   <CardDescription className="text-muted-foreground">Pravidelné lekce během týdne</CardDescription>
@@ -125,73 +150,134 @@ const Schedule = () => {
             </ScrollReveal>
           </div>
 
-          {/* Pravý scrollovací panel - Detailní rozpis */}
+          {/* Pravý scrollovací panel - Detailní rozpis jako kalendář */}
           <ScrollReveal delay={0.2} variants={fadeUpVariants}>
             <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
               <Card className="h-full shadow-lg hover:shadow-xl transition-all duration-300 bg-card/80 backdrop-blur-sm border-accent/10">
                 <CardHeader className="bg-gradient-to-r from-accent/10 to-secondary/10 rounded-t-lg">
                   <CardTitle className="flex items-center gap-2 text-2xl font-serif text-foreground">
                     <Clock className="w-6 h-6 text-primary" />
-                    Detailní rozpis kurzů
+                    Detailní rozpis kurzů dle jednotlivých dnů
                   </CardTitle>
                   <CardDescription className="text-muted-foreground">1. pololetí 2025/26</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
-                  <div className="space-y-6">
-                    {/* Úterý kurz */}
-                    <div className="space-y-2">
-                      <h4 className="font-semibold text-foreground flex items-center gap-2">
-                        <span className="w-2 h-2 bg-primary rounded-full"/>
-                        Úterý kurz (18:00 - 19:30)
-                      </h4>
-                      <div className="pl-4">
-                        {detailedSchedule.tuesday.map((item, idx) => (
-                          <div key={idx} className="flex items-start gap-3 text-sm py-1">
-                            <span className="text-muted-foreground min-w-[70px]">{item.month}:</span>
-                            <span className="text-foreground font-medium">{item.dates}</span>
-                          </div>
-                        ))}
-                        <Badge className="mt-2 bg-primary/10 text-primary border-primary/20">15 lekcí</Badge>
+                  {/** Přepínač kurzů */}
+                  <Tabs value={active} onValueChange={(v) => setActive(v as any)} className="w-full">
+                    {/* Desktop/Tablet: klasické taby */}
+                    <TabsList className="hidden sm:grid grid-cols-3 w-full">
+                      <TabsTrigger
+                        value="tue"
+                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
+                      >
+                        Úterý 18:00
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="wed"
+                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
+                      >
+                        Středa 8:00/10:00
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="thu"
+                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
+                      >
+                        Čtvrtek 16:15
+                      </TabsTrigger>
+                    </TabsList>
+
+                    {/* Mobile: šipky + aktuální kurz */}
+                    <div className="sm:hidden flex items-center justify-between gap-3 mt-1">
+                      <Button variant="outline" size="icon" aria-label="Předchozí kurz" onClick={() => go(-1)}>
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <div className="flex-1 text-center">
+                        <span className="inline-block rounded-full border px-3 py-1 text-sm bg-primary/20 border-primary/40 text-foreground font-medium">
+                          {active === 'tue' && 'Úterý 18:00'}
+                          {active === 'wed' && 'Středa 8:00/10:00'}
+                          {active === 'thu' && 'Čtvrtek 16:15'}
+                        </span>
                       </div>
+                      <Button variant="outline" size="icon" aria-label="Další kurz" onClick={() => go(1)}>
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
                     </div>
 
-                    {/* Středeční kurzy */}
-                    <div className="space-y-2">
-                      <h4 className="font-semibold text-foreground flex items-center gap-2">
-                        <span className="w-2 h-2 bg-accent-gold rounded-full"/>
-                        Středeční kurzy
-                      </h4>
-                      <div className="pl-4 space-y-3">
-                        <div>
-                          <p className="text-sm font-medium text-foreground mb-1">8:00 - 9:30 / 10:00 - 11:30</p>
-                          {detailedSchedule.wednesday.map((item, idx) => (
-                            <div key={idx} className="flex items-start gap-3 text-sm py-1">
-                              <span className="text-muted-foreground min-w-[70px]">{item.month}:</span>
-                              <span className="text-foreground font-medium">{item.dates}</span>
-                            </div>
-                          ))}
-                          <Badge className="mt-2 bg-primary/10 text-primary border-primary/20">16 lekcí</Badge>
+                    {/* Helper to render kalendář s vyznačenými dny */}
+                    {(() => {
+                      const monthStart = new Date(2025, 8, 1); // září 2025
+                      const monthEnd = new Date(2026, 0, 31);  // leden 2026
+
+                      const toDates = (items: { y: number; m: number; d: number[] }[]) =>
+                        items.flatMap(({ y, m, d }) => d.map((day) => new Date(y, m, day)));
+
+                      const tuesdayDates = toDates([
+                        { y: 2025, m: 8, d: [23, 30] },
+                        { y: 2025, m: 9, d: [7, 14, 21] },
+                        { y: 2025, m: 10, d: [4, 11, 18, 25] },
+                        { y: 2025, m: 11, d: [2, 9, 16] },
+                        { y: 2026, m: 0, d: [6, 13, 20] },
+                      ]);
+
+                      const wednesdayDates = toDates([
+                        { y: 2025, m: 8, d: [24] },
+                        { y: 2025, m: 9, d: [1, 8, 15, 22, 29] },
+                        { y: 2025, m: 10, d: [5, 12, 19, 26] },
+                        { y: 2025, m: 11, d: [3, 10, 17] },
+                        { y: 2026, m: 0, d: [7, 14, 21] },
+                      ]);
+
+                      const thursdayDates = toDates([
+                        { y: 2025, m: 8, d: [25] },
+                        { y: 2025, m: 9, d: [2, 9, 16, 23, 30] },
+                        { y: 2025, m: 10, d: [13, 20, 27] },
+                        { y: 2025, m: 11, d: [4, 11, 18] },
+                        { y: 2026, m: 0, d: [8, 15, 22] },
+                      ]);
+
+                      const renderCal = (dates: Date[]) => (
+                        <div className="mt-2 space-y-2">
+                          <Calendar
+                            mode="multiple"
+                            selected={dates}
+                            defaultMonth={monthStart}
+                            fromMonth={monthStart}
+                            toMonth={monthEnd}
+                            numberOfMonths={months}
+                          />
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span className="inline-block h-3 w-3 rounded-full bg-primary/60" />
+                            <span>Označené dny = konání lekce</span>
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      );
 
-                    {/* Čtvteční kurz */}
-                    <div className="space-y-2">
-                      <h4 className="font-semibold text-foreground flex items-center gap-2">
-                        <span className="w-2 h-2 bg-secondary rounded-full"/>
-                        Čtvteční kurz (16:15 - 17:45)
-                      </h4>
-                      <div className="pl-4">
-                        {detailedSchedule.thursday.map((item, idx) => (
-                          <div key={idx} className="flex items-start gap-3 text-sm py-1">
-                            <span className="text-muted-foreground min-w-[70px]">{item.month}:</span>
-                            <span className="text-foreground font-medium">{item.dates}</span>
-                          </div>
-                        ))}
-                        <Badge className="mt-2 bg-primary/10 text-primary border-primary/20">15 lekcí</Badge>
-                      </div>
-                    </div>
-                  </div>
+                      return (
+                        <>
+                          <TabsContent value="tue">
+                            <div className="flex justify-end">
+                              <Badge className="bg-primary/10 text-primary border-primary/20">{tuesdayDates.length} lekcí</Badge>
+                            </div>
+                            {renderCal(tuesdayDates)}
+                          </TabsContent>
+
+                          <TabsContent value="wed">
+                            <div className="flex justify-end">
+                              <Badge className="bg-accent/10 text-accent-foreground border-accent/20">{wednesdayDates.length} lekcí</Badge>
+                            </div>
+                            {renderCal(wednesdayDates)}
+                          </TabsContent>
+
+                          <TabsContent value="thu">
+                            <div className="flex justify-end">
+                              <Badge className="bg-secondary/10 text-secondary-foreground border-secondary/20">{thursdayDates.length} lekcí</Badge>
+                            </div>
+                            {renderCal(thursdayDates)}
+                          </TabsContent>
+                        </>
+                      );
+                    })()}
+                  </Tabs>
                 </CardContent>
               </Card>
             </motion.div>
