@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import CustomCursor from "@/components/CustomCursor";
+import CookieConsent from "@/components/CookieConsent";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -17,6 +18,7 @@ const App = () => (
       <TooltipProvider>
         <ErrorBoundary>
           <CustomCursor />
+          <CookieConsent />
           <Toaster />
           <Sonner />
           <BrowserRouter>
