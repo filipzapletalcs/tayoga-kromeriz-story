@@ -1,4 +1,5 @@
 import footerLogo from '@/assets/TaYoga_logo_footer.svg';
+import { Facebook, Instagram } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -110,6 +111,29 @@ const Footer = () => {
               <p>767 01 Kroměříž</p>
               <a href="tel:+420774515599" className="block hover:text-foreground transition-colors">+420 774 515 599</a>
               <a href="mailto:barayoga001@gmail.com" className="block hover:text-foreground transition-colors">barayoga001@gmail.com</a>
+            </div>
+            <div className="mt-5">
+              <p className="text-sm font-medium text-foreground mb-2">Sledujte nás</p>
+              <div className="flex items-center gap-3">
+                <a
+                  href="https://www.facebook.com/profile.php?id=61581015224519"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook TaYoga"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <Facebook className="h-5 w-5" />
+                </a>
+                <a
+                  href="https://www.instagram.com/taygoga_kromeriz/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram TaYoga"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <Instagram className="h-5 w-5" />
+                </a>
+              </div>
             </div>
           </div>
         </div>
