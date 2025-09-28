@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import heroImage from '@/assets/hero-yoga-studio.jpg';
+import heroImage from '@/assets/TaYoga_studio.webp';
 
 const EnhancedAbout = () => {
   const sectionRef = useRef<HTMLElement>(null);
