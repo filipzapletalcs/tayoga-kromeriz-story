@@ -20,7 +20,12 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-MWR6S1L6HN"></script>
     <script>
       gtag('js', new Date());
-      gtag('config', 'G-MWR6S1L6HN');
+      gtag('config', 'G-MWR6S1L6HN', {
+        'anonymize_ip': true,
+        'cookie_flags': 'SameSite=None;Secure',
+        'allow_google_signals': false,
+        'allow_ad_personalization_signals': false
+      });
     </script>
     <title>TaYoga - Jógové studio Kroměříž | Barbora Zapletalová</title>
     <meta name="description" content="Jógové studio TaYoga ve Vodní ulici v Kroměříži. Kurzy jógy s pomůckami pro začátečníky, pokročilé i seniory. Lektorka Barbora Zapletalová." />

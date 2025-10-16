@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ArrowRight, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import logoSvg from "@/assets/TaYoga_Logo.svg";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // ------------------------------------------------------------
 // Tayoga Header – klidný, hravý, interaktivní
@@ -11,18 +12,18 @@ import logoSvg from "@/assets/TaYoga_Logo.svg";
 // - Progres bar čtení (scroll progress)
 // - Aktivní zvýraznění sekce dle IntersectionObserver
 // - Mobile menu (bez dalších závislostí)
-// - "Breath dot" mikropulz vedle loga
+// - URL se mění při scrollování i klikání
 // ------------------------------------------------------------
 
-type NavItem = { id: string; label: string };
+type NavItem = { id: string; path: string; label: string };
 const NAV: NavItem[] = [
-  { id: "home", label: "Domů" },
-  { id: "about", label: "O studiu" },
-  { id: "instructor", label: "Lektorka" },
-  { id: "lessons", label: "Lekce" },
-  { id: "unique", label: "Unikátnost" },
-  { id: "schedule", label: "Rozvrh" },
-  { id: "contact", label: "Kontakt" },
+  { id: "home", path: "/", label: "Domů" },
+  { id: "o-studiu", path: "/o-studiu", label: "O studiu" },
+  { id: "lektorka", path: "/lektorka", label: "Lektorka" },
+  { id: "lekce", path: "/lekce", label: "Lekce" },
+  { id: "unikatnost", path: "/unikatnost", label: "Unikátnost" },
+  { id: "rozvrh", path: "/rozvrh", label: "Rozvrh" },
+  { id: "kontakt", path: "/kontakt", label: "Kontakt" },
 ];
 
 const Header: React.FC = () => {
@@ -30,6 +31,10 @@ const Header: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeId, setActiveId] = useState<string>("home");
   const [progress, setProgress] = useState(0);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isNavigatingRef = useRef(false);
+  const isInitialLoadRef = useRef(true);
 
   // Scroll effects
   useEffect(() => {
@@ -44,7 +49,28 @@ const Header: React.FC = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Active section highlight via IntersectionObserver
+  // When URL changes (manual navigation or initial load), scroll to that section
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const navItem = NAV.find(item => item.path === currentPath);
+
+    if (navItem) {
+      const sectionId = navItem.id;
+      const el = document.getElementById(sectionId);
+      if (el) {
+        // Only scroll if this is initial page load or user clicked a link (not from IntersectionObserver)
+        if (isInitialLoadRef.current || isNavigatingRef.current) {
+          setTimeout(() => {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+            isNavigatingRef.current = false;
+          }, 100);
+        }
+        isInitialLoadRef.current = false;
+      }
+    }
+  }, [location.pathname]);
+
+  // Active section highlight via IntersectionObserver + update URL
   useEffect(() => {
     const ids = NAV.map((n) => n.id);
     const els = ids
@@ -58,21 +84,38 @@ const Header: React.FC = () => {
         const visible = entries
           .filter((e) => e.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target?.id) setActiveId(visible.target.id);
+
+        if (visible?.target?.id) {
+          const sectionId = visible.target.id;
+          setActiveId(sectionId);
+
+          // Update URL based on visible section
+          const navItem = NAV.find(item => item.id === sectionId);
+          if (navItem && location.pathname !== navItem.path) {
+            navigate(navItem.path, { replace: true });
+          }
+        }
       },
       { rootMargin: "-20% 0px -30% 0px", threshold: [0.1, 0.25, 0.5, 0.75] }
     );
 
     els.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, []);
+  }, [navigate, location.pathname]);
 
-  const scrollToSection = (sectionId: string) => {
+  const scrollToSection = (sectionId: string, path: string) => {
     const el = document.getElementById(sectionId);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (el) {
+      isNavigatingRef.current = true;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      navigate(path);
+    }
     setMobileOpen(false);
   };
 
+  const isActive = (id: string) => {
+    return activeId === id;
+  };
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -94,7 +137,7 @@ const Header: React.FC = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <button
-            onClick={() => scrollToSection("home")}
+            onClick={() => scrollToSection("home", "/")}
             className="group inline-flex items-center"
             aria-label="TaYoga – Domů"
           >
@@ -110,16 +153,16 @@ const Header: React.FC = () => {
             {NAV.map((item) => (
               <button
                 key={item.id}
-                onClick={() => scrollToSection(item.id)}
+                onClick={() => scrollToSection(item.id, item.path)}
                 className={`relative text-foreground transition-colors duration-200 hover:text-primary ${
-                  activeId === item.id ? "text-primary" : ""
+                  isActive(item.id) ? "text-primary" : ""
                 }`}
               >
                 {item.label}
                 {/* underline */}
                 <span
                   className={`absolute -bottom-1 left-0 h-[2px] rounded bg-primary transition-all duration-300 ${
-                    activeId === item.id ? "w-full" : "w-0 group-hover:w-full"
+                    isActive(item.id) ? "w-full" : "w-0 group-hover:w-full"
                   }`}
                   aria-hidden
                 />
@@ -130,7 +173,7 @@ const Header: React.FC = () => {
           {/* CTA + theme toggle + mobile toggle */}
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Button onClick={() => scrollToSection("contact")} variant="default" className="hidden sm:inline-flex">
+            <Button onClick={() => scrollToSection("kontakt", "/kontakt")} variant="default" className="hidden sm:inline-flex">
               Rezervovat lekci <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
             <button
@@ -162,16 +205,16 @@ const Header: React.FC = () => {
                 {NAV.map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => scrollToSection(item.id)}
+                    onClick={() => scrollToSection(item.id, item.path)}
                     className={`flex items-center justify-between rounded-md px-2 py-3 text-left hover:bg-accent ${
-                      activeId === item.id ? "text-primary" : "text-foreground"
+                      isActive(item.id) ? "text-primary" : "text-foreground"
                     }`}
                   >
                     <span>{item.label}</span>
                     <span className="h-[2px] w-6 rounded bg-primary/60" aria-hidden />
                   </button>
                 ))}
-                <Button onClick={() => scrollToSection("contact")} className="mt-2">
+                <Button onClick={() => scrollToSection("kontakt", "/kontakt")} className="mt-2">
                   <Phone className="mr-2 h-4 w-4" /> Rezervovat lekci
                 </Button>
               </div>

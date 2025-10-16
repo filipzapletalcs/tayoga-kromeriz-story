@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/hooks/use-theme";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import CustomCursor from "@/components/CustomCursor";
 import CookieConsent from "@/components/CookieConsent";
+import Layout from "@/components/Layout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -23,9 +24,16 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Index />} />
+                <Route path="o-studiu" element={<Index />} />
+                <Route path="lektorka" element={<Index />} />
+                <Route path="lekce" element={<Index />} />
+                <Route path="unikatnost" element={<Index />} />
+                <Route path="rozvrh" element={<Index />} />
+                <Route path="kontakt" element={<Index />} />
+                <Route path="*" element={<NotFound />} />
+              </Route>
             </Routes>
           </BrowserRouter>
         </ErrorBoundary>

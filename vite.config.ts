@@ -15,4 +15,12 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    sourcemap: true, // Enable source maps for production
+    rollupOptions: {
+      output: {
+        sourcemapExcludeSources: true, // Exclude source code from source maps (security)
+      },
+    },
+  },
 }));
