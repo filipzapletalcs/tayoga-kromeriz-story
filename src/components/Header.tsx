@@ -4,7 +4,7 @@ import { Menu, X, ArrowRight, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import logoSvg from "@/assets/TaYoga_Logo.svg";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 
 // ------------------------------------------------------------
 // Tayoga Header – klidný, hravý, interaktivní
@@ -173,9 +173,11 @@ const Header: React.FC = () => {
           {/* CTA + theme toggle + mobile toggle */}
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <Button onClick={() => scrollToSection("kontakt", "/kontakt")} variant="default" className="hidden sm:inline-flex">
-              Rezervovat lekci <ArrowRight className="ml-1 h-4 w-4" />
-            </Button>
+            <Link to="/rezervace">
+              <Button variant="default" className="hidden sm:inline-flex">
+                Rezervovat lekci <ArrowRight className="ml-1 h-4 w-4" />
+              </Button>
+            </Link>
             <button
               className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md border bg-background hover:bg-accent"
               onClick={() => setMobileOpen((s) => !s)}
@@ -214,9 +216,11 @@ const Header: React.FC = () => {
                     <span className="h-[2px] w-6 rounded bg-primary/60" aria-hidden />
                   </button>
                 ))}
-                <Button onClick={() => scrollToSection("kontakt", "/kontakt")} className="mt-2">
-                  <Phone className="mr-2 h-4 w-4" /> Rezervovat lekci
-                </Button>
+                <Link to="/rezervace" className="mt-2">
+                  <Button className="w-full">
+                    <Phone className="mr-2 h-4 w-4" /> Rezervovat lekci
+                  </Button>
+                </Link>
               </div>
             </div>
           </motion.div>
