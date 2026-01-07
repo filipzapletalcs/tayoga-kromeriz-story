@@ -6,6 +6,7 @@ import {
   Calendar,
   BookOpen,
   Sparkles,
+  CalendarCheck,
   Users,
   LogOut,
   Menu,
@@ -36,6 +37,7 @@ const AdminLayout: React.FC = () => {
   const navItems = [
     { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Přehled' },
     { to: '/admin/classes', icon: BookOpen, label: 'Lekce' },
+    { to: '/admin/one-time', icon: CalendarCheck, label: 'Jednorázové' },
     { to: '/admin/workshops', icon: Sparkles, label: 'Workshopy' },
     { to: '/admin/calendar', icon: Calendar, label: 'Kalendář' },
     { to: '/admin/visitors', icon: Users, label: 'Návštěvníci' },

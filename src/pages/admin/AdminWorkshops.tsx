@@ -52,6 +52,7 @@ import {
 import { format } from 'date-fns'
 import { cs } from 'date-fns/locale'
 import type { Workshop, WorkshopInsert } from '@/types/database'
+import InlineDatePicker from '@/components/admin/InlineDatePicker'
 
 const AdminWorkshops: React.FC = () => {
   const navigate = useNavigate()
@@ -330,7 +331,7 @@ const AdminWorkshops: React.FC = () => {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-serif">
               {editingWorkshop ? 'Upravit workshop' : 'Přidat workshop'}
@@ -364,27 +365,23 @@ const AdminWorkshops: React.FC = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date">Datum</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                />
-              </div>
+            {/* Inline Date Picker */}
+            <InlineDatePicker
+              label="Datum workshopu"
+              value={formData.date}
+              onChange={(date) => setFormData({ ...formData, date })}
+              minDate={new Date()}
+            />
 
-              <div className="space-y-2">
-                <Label htmlFor="capacity">Kapacita</Label>
-                <Input
-                  id="capacity"
-                  type="number"
-                  min={1}
-                  value={formData.capacity}
-                  onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 1 })}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="capacity">Kapacita</Label>
+              <Input
+                id="capacity"
+                type="number"
+                min={1}
+                value={formData.capacity}
+                onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 1 })}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

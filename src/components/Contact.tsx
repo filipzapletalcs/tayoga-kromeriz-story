@@ -215,12 +215,15 @@ const Contact = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="name">Jméno</Label>
-                        <Input 
-                          id="name" 
+                        <Input
+                          id="name"
                           placeholder="Vaše jméno"
                           value={formData.name}
                           onChange={(e) => handleInputChange('name', e.target.value)}
                           className={errors.name ? 'border-destructive' : ''}
+                          required
+                          aria-required="true"
+                          aria-invalid={!!errors.name}
                         />
                         <FormFieldError error={errors.name} />
                       </div>
@@ -238,26 +241,32 @@ const Contact = () => {
                     
                     <div>
                       <Label htmlFor="email">Email</Label>
-                      <Input 
-                        id="email" 
-                        type="email" 
+                      <Input
+                        id="email"
+                        type="email"
                         placeholder="vas@email.cz"
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         className={errors.email ? 'border-destructive' : ''}
+                        required
+                        aria-required="true"
+                        aria-invalid={!!errors.email}
                       />
                       <FormFieldError error={errors.email} />
                     </div>
                     
                     <div>
                       <Label htmlFor="message">Zpráva</Label>
-                      <Textarea 
-                        id="message" 
+                      <Textarea
+                        id="message"
                         placeholder="Napište nám svou zprávu nebo dotaz..."
                         rows={4}
                         value={formData.message}
                         onChange={(e) => handleInputChange('message', e.target.value)}
                         className={errors.message ? 'border-destructive' : ''}
+                        required
+                        aria-required="true"
+                        aria-invalid={!!errors.message}
                       />
                       <FormFieldError error={errors.message} />
                     </div>

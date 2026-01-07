@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    sourcemap: true, // Enable source maps for production
+    sourcemap: false, // Disabled for production (20-30% smaller bundle)
     rollupOptions: {
       output: {
         sourcemapExcludeSources: true, // Exclude source code from source maps (security)

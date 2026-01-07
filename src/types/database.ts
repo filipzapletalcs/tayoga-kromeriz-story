@@ -111,6 +111,7 @@ export type Database = {
           note: string | null
           phone: string | null
           workshop_id: string | null
+          one_time_class_id: string | null
         }
         Insert: {
           class_instance_id?: string | null
@@ -121,6 +122,7 @@ export type Database = {
           note?: string | null
           phone?: string | null
           workshop_id?: string | null
+          one_time_class_id?: string | null
         }
         Update: {
           class_instance_id?: string | null
@@ -131,6 +133,7 @@ export type Database = {
           note?: string | null
           phone?: string | null
           workshop_id?: string | null
+          one_time_class_id?: string | null
         }
         Relationships: [
           {
@@ -195,6 +198,48 @@ export type Database = {
         }
         Relationships: []
       }
+      one_time_classes: {
+        Row: {
+          capacity: number
+          created_at: string | null
+          date: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          price: number | null
+          reserved_spots: number
+          time_end: string
+          time_start: string
+          title: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string | null
+          date: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          price?: number | null
+          reserved_spots?: number
+          time_end: string
+          time_start: string
+          title: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string | null
+          date?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          price?: number | null
+          reserved_spots?: number
+          time_end?: string
+          time_start?: string
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_class_schedule: {
@@ -222,6 +267,10 @@ export type Database = {
         Args: { p_workshop_id: string }
         Returns: boolean
       }
+      check_one_time_class_capacity: {
+        Args: { p_class_id: string }
+        Returns: boolean
+      }
       get_or_create_class_instance: {
         Args: { p_date: string; p_recurring_class_id: string }
         Returns: string
@@ -229,6 +278,10 @@ export type Database = {
       get_registration_count: { Args: { instance_id: string }; Returns: number }
       get_workshop_registration_count: {
         Args: { p_workshop_id: string }
+        Returns: number
+      }
+      get_one_time_class_registration_count: {
+        Args: { p_class_id: string }
         Returns: number
       }
     }
@@ -339,7 +392,32 @@ export type Workshop = Database['public']['Tables']['workshops']['Row']
 export type WorkshopInsert = Database['public']['Tables']['workshops']['Insert']
 export type WorkshopUpdate = Database['public']['Tables']['workshops']['Update']
 
+export type OneTimeClass = Database['public']['Tables']['one_time_classes']['Row']
+export type OneTimeClassInsert = Database['public']['Tables']['one_time_classes']['Insert']
+export type OneTimeClassUpdate = Database['public']['Tables']['one_time_classes']['Update']
+
 export type PublicClassSchedule = Database['public']['Views']['public_class_schedule']['Row']
+
+// Schedule item types for unified calendar view
+export type LessonType = 'recurring' | 'one_time' | 'workshop'
+
+export interface ScheduleItem {
+  id: string
+  type: LessonType
+  title: string
+  description: string | null
+  date: Date
+  time_start: string
+  time_end: string
+  capacity: number
+  registeredCount: number
+  price: number | null
+  // Original data references
+  recurringClass?: RecurringClass
+  classInstance?: ClassInstance
+  oneTimeClass?: OneTimeClass
+  workshop?: Workshop
+}
 
 // Day of week mapping (Czech)
 export const DAY_NAMES: Record<number, string> = {

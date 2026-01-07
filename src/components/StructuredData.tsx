@@ -43,6 +43,12 @@ const StructuredData = () => {
           "dayOfWeek": "Thursday",
           "opens": "16:15",
           "closes": "19:30"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Friday", "Saturday", "Sunday"],
+          "opens": "00:00",
+          "closes": "00:00"
         }
       ],
       "priceRange": "210 Kč - 800 Kč",
@@ -56,7 +62,7 @@ const StructuredData = () => {
         "@type": "Person",
         "name": "Barbora Zapletalová"
       },
-      "foundingDate": "2025-09",
+      "foundingDate": "2024-09",
       "hasOfferCatalog": {
         "@type": "OfferCatalog",
         "name": "Jógové kurzy a lekce",

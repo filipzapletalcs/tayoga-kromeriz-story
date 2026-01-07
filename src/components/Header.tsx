@@ -35,6 +35,7 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const isNavigatingRef = useRef(false);
   const isInitialLoadRef = useRef(true);
+  const navigationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Scroll effects
   useEffect(() => {
@@ -49,8 +50,10 @@ const Header: React.FC = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // When URL changes (manual navigation or initial load), scroll to that section
+  // When URL changes on initial load only, scroll to that section
   useEffect(() => {
+    if (!isInitialLoadRef.current) return;
+
     const currentPath = location.pathname;
     const navItem = NAV.find(item => item.path === currentPath);
 
@@ -58,16 +61,12 @@ const Header: React.FC = () => {
       const sectionId = navItem.id;
       const el = document.getElementById(sectionId);
       if (el) {
-        // Only scroll if this is initial page load or user clicked a link (not from IntersectionObserver)
-        if (isInitialLoadRef.current || isNavigatingRef.current) {
-          setTimeout(() => {
-            el.scrollIntoView({ behavior: "smooth", block: "start" });
-            isNavigatingRef.current = false;
-          }, 100);
-        }
-        isInitialLoadRef.current = false;
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
       }
     }
+    isInitialLoadRef.current = false;
   }, [location.pathname]);
 
   // Active section highlight via IntersectionObserver + update URL
@@ -81,6 +80,9 @@ const Header: React.FC = () => {
 
     const observer = new IntersectionObserver(
       (entries) => {
+        // Skip URL updates while user is navigating via click
+        if (isNavigatingRef.current) return;
+
         const visible = entries
           .filter((e) => e.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
@@ -106,9 +108,25 @@ const Header: React.FC = () => {
   const scrollToSection = (sectionId: string, path: string) => {
     const el = document.getElementById(sectionId);
     if (el) {
+      // Block IntersectionObserver URL updates during navigation
       isNavigatingRef.current = true;
+
+      // Clear any existing timeout
+      if (navigationTimeoutRef.current) {
+        clearTimeout(navigationTimeoutRef.current);
+      }
+
+      // Update URL and active state immediately
+      setActiveId(sectionId);
+      navigate(path, { replace: true });
+
+      // Scroll to section
       el.scrollIntoView({ behavior: "smooth", block: "start" });
-      navigate(path);
+
+      // Re-enable IntersectionObserver after scroll completes (approx 1s for smooth scroll)
+      navigationTimeoutRef.current = setTimeout(() => {
+        isNavigatingRef.current = false;
+      }, 1000);
     }
     setMobileOpen(false);
   };
@@ -154,8 +172,12 @@ const Header: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id, item.path)}
-                className={`relative text-foreground transition-colors duration-200 hover:text-primary ${
-                  isActive(item.id) ? "text-primary" : ""
+                className={`relative transition-colors duration-200 hover:text-primary ${
+                  isActive(item.id)
+                    ? "text-primary"
+                    : isScrolled
+                      ? "text-foreground"
+                      : "text-white dark:text-foreground"
                 }`}
               >
                 {item.label}
@@ -172,14 +194,21 @@ const Header: React.FC = () => {
 
           {/* CTA + theme toggle + mobile toggle */}
           <div className="flex items-center gap-3">
-            <ThemeToggle />
+            <ThemeToggle
+              className={!isScrolled ? "text-white hover:bg-white/10 dark:text-foreground dark:hover:bg-accent" : ""}
+              iconClassName={!isScrolled ? "text-white dark:text-foreground" : ""}
+            />
             <Link to="/rezervace">
               <Button variant="default" className="hidden sm:inline-flex">
                 Rezervovat lekci <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
             </Link>
             <button
-              className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md border bg-background hover:bg-accent"
+              className={`md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md border transition-colors duration-200 ${
+                isScrolled
+                  ? "bg-background hover:bg-accent border-border"
+                  : "bg-white/10 hover:bg-white/20 border-white/30 text-white dark:bg-background dark:hover:bg-accent dark:border-border dark:text-foreground"
+              }`}
               onClick={() => setMobileOpen((s) => !s)}
               aria-expanded={mobileOpen}
               aria-controls="mobile-menu"

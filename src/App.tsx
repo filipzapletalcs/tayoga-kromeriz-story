@@ -16,6 +16,7 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminClasses from "./pages/admin/AdminClasses";
+import AdminOneTimeClasses from "./pages/admin/AdminOneTimeClasses";
 import AdminWorkshops from "./pages/admin/AdminWorkshops";
 import AdminCalendar from "./pages/admin/AdminCalendar";
 import AdminVisitors from "./pages/admin/AdminVisitors";
@@ -53,6 +54,7 @@ const App = () => (
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route path="dashboard" element={<AdminDashboard />} />
                   <Route path="classes" element={<AdminClasses />} />
+                  <Route path="one-time" element={<AdminOneTimeClasses />} />
                   <Route path="workshops" element={<AdminWorkshops />} />
                   <Route path="calendar" element={<AdminCalendar />} />
                   <Route path="visitors" element={<AdminVisitors />} />

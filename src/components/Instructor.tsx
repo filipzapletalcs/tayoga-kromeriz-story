@@ -171,8 +171,9 @@ const Instructor = () => {
                   <div className="relative overflow-hidden">
                     <img
                       src={instructorImage}
-                      alt="Barbora Zapletalová - lektorka jógy"
+                      alt="Barbora Zapletalová - certifikovaná lektorka jógy v TaYoga Kroměříž, učitelka Iyengar jógy"
                       className="w-full h-[450px] object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                      loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
 

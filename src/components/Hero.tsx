@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
-import heroImage from '@/assets/hero-yoga-studio.jpg';
-import { ScrollReveal, fadeUpVariants, fadeLeftVariants, Floating } from '@/components/ui/scroll-animations';
+import { ScrollReveal, fadeLeftVariants, Floating } from '@/components/ui/scroll-animations';
 import { motion } from 'framer-motion';
 
 const Hero = () => {
@@ -12,25 +11,34 @@ const Hero = () => {
   };
 
   return (
-    <section id="home" className="min-h-screen relative overflow-hidden">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroImage})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/50" />
+    <section id="home" className="min-h-screen relative overflow-hidden dark">
+      {/* Background Video */}
+      <div className="absolute inset-0">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="/Tayoga_Hero.jpg"
+          aria-label="Video TaYoga studia - jógová lekce v Kroměříži"
+          title="TaYoga Kroměříž - jógové studio"
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/tayoga_studio_kromeriz.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/55 to-background/30" />
       </div>
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-6 h-screen flex items-center">
         <div className="max-w-2xl">
           <ScrollReveal variants={fadeLeftVariants}>
-            <h2 className="text-6xl lg:text-7xl font-serif font-bold text-foreground mb-6 leading-tight">
+            <h1 className="text-6xl lg:text-7xl font-serif font-bold text-foreground mb-6 leading-tight">
               Tělo je
               <span className="text-primary block">chrám duše</span>
-            </h2>
+            </h1>
           </ScrollReveal>
-          
+
           <ScrollReveal delay={0.2}>
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed max-w-xl">
               Vytvořili jsme místo setkávání pro společnou praxi jógy v historickém středu Kroměříže.
@@ -41,8 +49,8 @@ const Hero = () => {
           <ScrollReveal delay={0.4}>
             <div className="flex flex-col sm:flex-row gap-4">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   onClick={() => scrollToSection('about')}
                   className="text-lg px-8 py-6"
                 >
@@ -54,7 +62,7 @@ const Hero = () => {
                   size="lg"
                   variant="outline"
                   onClick={() => scrollToSection('schedule')}
-                  className="text-lg px-8 py-6"
+                  className="text-lg px-8 py-6 text-white border-white/50 hover:bg-white/10 hover:text-white"
                 >
                   Prozkoumat lekce
                 </Button>
@@ -66,12 +74,12 @@ const Hero = () => {
 
       {/* Scroll indicator */}
       <Floating duration={2} className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-        <motion.div 
+        <motion.div
           className="w-6 h-10 border-2 border-primary rounded-full flex justify-center cursor-pointer"
           onClick={() => scrollToSection('about')}
           whileHover={{ scale: 1.1 }}
         >
-          <motion.div 
+          <motion.div
             className="w-1 h-3 bg-primary rounded-full mt-2"
             animate={{ y: [0, 3, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}
