@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { toast } from 'sonner'
 import {
   Plus,
   Edit2,
@@ -115,21 +116,35 @@ const AdminOneTimeClasses: React.FC = () => {
   }
 
   const handleSubmit = async () => {
-    if (editingClass) {
-      await updateClass.mutateAsync({
-        id: editingClass.id,
-        updates: formData
-      })
-    } else {
-      await createClass.mutateAsync(formData)
+    try {
+      if (editingClass) {
+        await updateClass.mutateAsync({
+          id: editingClass.id,
+          updates: formData
+        })
+        toast.success('Jednorázová lekce byla úspěšně upravena')
+      } else {
+        await createClass.mutateAsync(formData)
+        toast.success('Jednorázová lekce byla úspěšně vytvořena')
+      }
+      setIsDialogOpen(false)
+      resetForm()
+    } catch (error) {
+      console.error('Error saving one-time class:', error)
+      toast.error('Nepodařilo se uložit lekci. Zkuste to znovu.')
     }
-    setIsDialogOpen(false)
-    resetForm()
   }
 
   const handleDelete = async (id: string) => {
-    await deleteClass.mutateAsync(id)
-    setDeleteConfirm(null)
+    try {
+      await deleteClass.mutateAsync(id)
+      toast.success('Jednorázová lekce byla úspěšně smazána')
+      setDeleteConfirm(null)
+    } catch (error) {
+      console.error('Error deleting one-time class:', error)
+      toast.error('Nepodařilo se smazat lekci. Zkuste to znovu.')
+      setDeleteConfirm(null)
+    }
   }
 
   const formatTime = (time: string) => time.slice(0, 5)

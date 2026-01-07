@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { toast } from 'sonner'
 import {
   Plus,
   Edit2,
@@ -124,27 +125,41 @@ const AdminClasses: React.FC = () => {
   }
 
   const handleSubmit = async () => {
-    if (editingClass) {
-      await updateClass.mutateAsync({
-        id: editingClass.id,
-        updates: formData
-      })
-    } else {
-      // Create class first
-      const newClass = await createClass.mutateAsync(formData)
+    try {
+      if (editingClass) {
+        await updateClass.mutateAsync({
+          id: editingClass.id,
+          updates: formData
+        })
+        toast.success('Lekce byla úspěšně upravena')
+      } else {
+        // Create class first
+        const newClass = await createClass.mutateAsync(formData)
 
-      // Apply selected dates (creates instances for replacements, cancels skipped regular dates)
-      if (selectedDates.size > 0 && newClass?.id) {
-        await applySelectedDates(newClass.id, selectedDates, formData.day_of_week)
+        // Apply selected dates (creates instances for replacements, cancels skipped regular dates)
+        if (selectedDates.size > 0 && newClass?.id) {
+          await applySelectedDates(newClass.id, selectedDates, formData.day_of_week)
+        }
+        toast.success('Lekce byla úspěšně vytvořena')
       }
+      setIsDialogOpen(false)
+      resetForm()
+    } catch (error) {
+      console.error('Error saving class:', error)
+      toast.error('Nepodařilo se uložit lekci. Zkuste to znovu.')
     }
-    setIsDialogOpen(false)
-    resetForm()
   }
 
   const handleDelete = async (id: string) => {
-    await deleteClass.mutateAsync(id)
-    setDeleteConfirm(null)
+    try {
+      await deleteClass.mutateAsync(id)
+      toast.success('Lekce byla úspěšně smazána')
+      setDeleteConfirm(null)
+    } catch (error) {
+      console.error('Error deleting class:', error)
+      toast.error('Nepodařilo se smazat lekci. Zkuste to znovu.')
+      setDeleteConfirm(null)
+    }
   }
 
   const formatTime = (time: string) => time.slice(0, 5)

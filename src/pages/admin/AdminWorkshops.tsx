@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { toast } from 'sonner'
 import {
   Plus,
   Edit2,
@@ -114,21 +115,35 @@ const AdminWorkshops: React.FC = () => {
   }
 
   const handleSubmit = async () => {
-    if (editingWorkshop) {
-      await updateWorkshop.mutateAsync({
-        id: editingWorkshop.id,
-        updates: formData
-      })
-    } else {
-      await createWorkshop.mutateAsync(formData)
+    try {
+      if (editingWorkshop) {
+        await updateWorkshop.mutateAsync({
+          id: editingWorkshop.id,
+          updates: formData
+        })
+        toast.success('Workshop byl úspěšně upraven')
+      } else {
+        await createWorkshop.mutateAsync(formData)
+        toast.success('Workshop byl úspěšně vytvořen')
+      }
+      setIsDialogOpen(false)
+      resetForm()
+    } catch (error) {
+      console.error('Error saving workshop:', error)
+      toast.error('Nepodařilo se uložit workshop. Zkuste to znovu.')
     }
-    setIsDialogOpen(false)
-    resetForm()
   }
 
   const handleDelete = async (id: string) => {
-    await deleteWorkshop.mutateAsync(id)
-    setDeleteConfirm(null)
+    try {
+      await deleteWorkshop.mutateAsync(id)
+      toast.success('Workshop byl úspěšně smazán')
+      setDeleteConfirm(null)
+    } catch (error) {
+      console.error('Error deleting workshop:', error)
+      toast.error('Nepodařilo se smazat workshop. Zkuste to znovu.')
+      setDeleteConfirm(null)
+    }
   }
 
   const formatTime = (time: string) => time.slice(0, 5)
