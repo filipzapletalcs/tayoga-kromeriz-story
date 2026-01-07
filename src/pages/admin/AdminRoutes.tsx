@@ -11,6 +11,7 @@ const AdminOneTimeClasses = lazy(() => import("./AdminOneTimeClasses"));
 const AdminWorkshops = lazy(() => import("./AdminWorkshops"));
 const AdminCalendar = lazy(() => import("./AdminCalendar"));
 const AdminVisitors = lazy(() => import("./AdminVisitors"));
+const AdminMessages = lazy(() => import("./AdminMessages"));
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -61,6 +62,11 @@ const AdminRoutes = () => (
         <Route path="visitors" element={
           <Suspense fallback={<LoadingFallback />}>
             <AdminVisitors />
+          </Suspense>
+        } />
+        <Route path="messages" element={
+          <Suspense fallback={<LoadingFallback />}>
+            <AdminMessages />
           </Suspense>
         } />
       </Route>

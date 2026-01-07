@@ -8,6 +8,7 @@ import {
   Sparkles,
   CalendarCheck,
   Users,
+  MessageSquare,
   LogOut,
   Menu,
   X,
@@ -41,6 +42,7 @@ const AdminLayout: React.FC = () => {
     { to: '/admin/workshops', icon: Sparkles, label: 'Workshopy' },
     { to: '/admin/calendar', icon: Calendar, label: 'Kalendář' },
     { to: '/admin/visitors', icon: Users, label: 'Návštěvníci' },
+    { to: '/admin/messages', icon: MessageSquare, label: 'Zprávy' },
   ]
 
   if (isLoading) {

@@ -143,9 +143,9 @@ const EnhancedAbout = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent"></div>
               </div>
 
-              {/* Floating secondary image */}
+              {/* Floating secondary image - z-20 to stay above sticky text cards */}
               <div
-                className="absolute top-20 right-0 lg:-right-10 w-64 h-80 rounded-xl overflow-hidden card-hover-shadow z-10 border-4 border-background"
+                className="absolute top-20 right-0 lg:-right-10 w-64 h-80 rounded-xl overflow-hidden card-hover-shadow z-20 border-4 border-background"
                 style={{ transform: `translateY(${scrollY * -0.05}px) rotate(5deg)` }}
               >
                 <img
