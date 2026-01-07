@@ -57,6 +57,7 @@ import {
   useDeleteClass
 } from '@/hooks/useClasses'
 import { DAY_NAMES, type RecurringClass, type RecurringClassInsert } from '@/types/database'
+import { LessonSchedulePicker, applySelectedDates } from '@/components/admin/LessonSchedulePicker'
 
 const AdminClasses: React.FC = () => {
   const navigate = useNavigate()
@@ -68,6 +69,7 @@ const AdminClasses: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingClass, setEditingClass] = useState<RecurringClass | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set())
 
   const [formData, setFormData] = useState<RecurringClassInsert>({
     title: '',
@@ -76,6 +78,7 @@ const AdminClasses: React.FC = () => {
     time_start: '18:00',
     time_end: '19:30',
     capacity: 10,
+    reserved_spots: 0,
     price: 250,
     lesson_count: null,
     is_active: true,
@@ -89,11 +92,13 @@ const AdminClasses: React.FC = () => {
       time_start: '18:00',
       time_end: '19:30',
       capacity: 10,
+      reserved_spots: 0,
       price: 250,
       lesson_count: null,
       is_active: true,
     })
     setEditingClass(null)
+    setSelectedDates(new Set())
   }
 
   const openCreateDialog = () => {
@@ -110,6 +115,7 @@ const AdminClasses: React.FC = () => {
       time_start: cls.time_start,
       time_end: cls.time_end,
       capacity: cls.capacity,
+      reserved_spots: cls.reserved_spots || 0,
       price: cls.price || 0,
       lesson_count: cls.lesson_count,
       is_active: cls.is_active ?? true,
@@ -124,7 +130,13 @@ const AdminClasses: React.FC = () => {
         updates: formData
       })
     } else {
-      await createClass.mutateAsync(formData)
+      // Create class first
+      const newClass = await createClass.mutateAsync(formData)
+
+      // Apply selected dates (creates instances for replacements, cancels skipped regular dates)
+      if (selectedDates.size > 0 && newClass?.id) {
+        await applySelectedDates(newClass.id, selectedDates, formData.day_of_week)
+      }
     }
     setIsDialogOpen(false)
     resetForm()
@@ -299,7 +311,7 @@ const AdminClasses: React.FC = () => {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-serif">
               {editingClass ? 'Upravit lekci' : 'Přidat lekci'}
@@ -311,29 +323,30 @@ const AdminClasses: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Název lekce</Label>
-              <Input
-                id="title"
-                placeholder="např. Kurz začátečníci"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              />
-            </div>
+          <div className="grid md:grid-cols-2 gap-6 py-4">
+            {/* Left column - Form fields */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Název lekce</Label>
+                <Input
+                  id="title"
+                  placeholder="např. Kurz začátečníci"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Popis (volitelné)</Label>
-              <Textarea
-                id="description"
-                placeholder="Krátký popis lekce..."
-                rows={2}
-                value={formData.description || ''}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Popis (volitelné)</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Krátký popis lekce..."
+                  rows={2}
+                  value={formData.description || ''}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+              </div>
 
-            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Den v týdnu</Label>
                 <Select
@@ -353,71 +366,106 @@ const AdminClasses: React.FC = () => {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="capacity">Kapacita</Label>
-                <Input
-                  id="capacity"
-                  type="number"
-                  min={1}
-                  value={formData.capacity}
-                  onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 1 })}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="time_start">Začátek</Label>
+                  <Input
+                    id="time_start"
+                    type="time"
+                    value={formData.time_start}
+                    onChange={(e) => setFormData({ ...formData, time_start: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="time_end">Konec</Label>
+                  <Input
+                    id="time_end"
+                    type="time"
+                    value={formData.time_end}
+                    onChange={(e) => setFormData({ ...formData, time_end: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="capacity">Celková kapacita</Label>
+                  <Input
+                    id="capacity"
+                    type="number"
+                    min={1}
+                    value={formData.capacity}
+                    onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 1 })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="reserved_spots">Již obsazeno</Label>
+                  <Input
+                    id="reserved_spots"
+                    type="number"
+                    min={0}
+                    max={formData.capacity - 1}
+                    value={formData.reserved_spots || 0}
+                    onChange={(e) => setFormData({ ...formData, reserved_spots: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+              </div>
+
+              {/* Capacity preview */}
+              <div className="rounded-lg bg-muted/50 p-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Volná místa:</span>
+                  <span className="font-semibold">
+                    {Math.max(0, (formData.capacity || 0) - (formData.reserved_spots || 0))} z {formData.capacity || 0}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Cena (Kč)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    min={0}
+                    value={formData.price || ''}
+                    onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lesson_count">Počet lekcí</Label>
+                  <Input
+                    id="lesson_count"
+                    type="number"
+                    min={1}
+                    placeholder="volitelné"
+                    value={formData.lesson_count || ''}
+                    onChange={(e) => setFormData({ ...formData, lesson_count: e.target.value ? parseInt(e.target.value) : null })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <Label htmlFor="is_active">Aktivní lekce</Label>
+                <Switch
+                  id="is_active"
+                  checked={formData.is_active ?? true}
+                  onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="time_start">Začátek</Label>
-                <Input
-                  id="time_start"
-                  type="time"
-                  value={formData.time_start}
-                  onChange={(e) => setFormData({ ...formData, time_start: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="time_end">Konec</Label>
-                <Input
-                  id="time_end"
-                  type="time"
-                  value={formData.time_end}
-                  onChange={(e) => setFormData({ ...formData, time_end: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="price">Cena (Kč)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  min={0}
-                  value={formData.price || ''}
-                  onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) || 0 })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="lesson_count">Počet lekcí</Label>
-                <Input
-                  id="lesson_count"
-                  type="number"
-                  min={1}
-                  placeholder="volitelné"
-                  value={formData.lesson_count || ''}
-                  onChange={(e) => setFormData({ ...formData, lesson_count: e.target.value ? parseInt(e.target.value) : null })}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <Label htmlFor="is_active">Aktivní lekce</Label>
-              <Switch
-                id="is_active"
-                checked={formData.is_active ?? true}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+            {/* Right column - Schedule picker */}
+            <div>
+              <LessonSchedulePicker
+                dayOfWeek={formData.day_of_week}
+                lessonCount={formData.lesson_count}
+                recurringClassId={editingClass?.id}
+                selectedDates={editingClass ? undefined : selectedDates}
+                onSelectedDatesChange={editingClass ? undefined : setSelectedDates}
               />
             </div>
           </div>

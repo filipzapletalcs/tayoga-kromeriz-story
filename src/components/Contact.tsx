@@ -8,7 +8,7 @@ import { FormError, FormSuccess, FormFieldError } from '@/components/ui/form-err
 import { FadeIn, AnimatedButton } from '@/components/ui/micro-interactions';
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
-import emailjs from '@emailjs/browser';
+import { supabase } from '@/lib/supabase';
 
 const Contact = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -77,22 +77,34 @@ const Contact = () => {
     setSubmitSuccess(false);
 
     try {
-      // EmailJS konfigurace z environment proměnných
-      const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-      const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-      const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+      // Uložení zprávy do Supabase
+      const { error: insertError } = await supabase
+        .from('contact_messages')
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || null,
+          message: formData.message,
+        });
 
-      // Inicializace EmailJS (stačí jednou, můžete dát i do useEffect)
-      emailjs.init(PUBLIC_KEY);
+      if (insertError) {
+        throw insertError;
+      }
 
-      // Odeslání emailu
-      await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-        from_name: formData.name,
-        from_email: formData.email,
-        phone: formData.phone,
-        message: formData.message,
-        to_email: 'barayoga001@gmail.com'
-      });
+      // Odeslání emailové notifikace přes Edge Function
+      try {
+        await supabase.functions.invoke('send-contact-email', {
+          body: {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            message: formData.message,
+          },
+        });
+      } catch (emailError) {
+        // Email notifikace selhala, ale zpráva je uložena - neblokujeme
+        console.warn('Email notification failed, but message was saved:', emailError);
+      }
 
       setSubmitSuccess(true);
       setFormData({ name: '', email: '', phone: '', message: '' });
@@ -102,7 +114,7 @@ const Contact = () => {
         setSubmitSuccess(false);
       }, 5000);
     } catch (error) {
-      console.error('Email error:', error);
+      console.error('Contact form error:', error);
       setErrors({ submit: 'Nepodařilo se odeslat zprávu. Zkuste to prosím znovu.' });
     } finally {
       setIsSubmitting(false);

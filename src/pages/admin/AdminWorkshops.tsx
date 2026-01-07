@@ -72,6 +72,7 @@ const AdminWorkshops: React.FC = () => {
     time_start: '10:00',
     time_end: '14:00',
     capacity: 15,
+    reserved_spots: 0,
     price: 500,
     is_active: true,
   })
@@ -84,6 +85,7 @@ const AdminWorkshops: React.FC = () => {
       time_start: '10:00',
       time_end: '14:00',
       capacity: 15,
+      reserved_spots: 0,
       price: 500,
       is_active: true,
     })
@@ -104,6 +106,7 @@ const AdminWorkshops: React.FC = () => {
       time_start: workshop.time_start,
       time_end: workshop.time_end,
       capacity: workshop.capacity,
+      reserved_spots: workshop.reserved_spots || 0,
       price: workshop.price || 0,
       is_active: workshop.is_active ?? true,
     })
@@ -373,15 +376,39 @@ const AdminWorkshops: React.FC = () => {
               minDate={new Date()}
             />
 
-            <div className="space-y-2">
-              <Label htmlFor="capacity">Kapacita</Label>
-              <Input
-                id="capacity"
-                type="number"
-                min={1}
-                value={formData.capacity}
-                onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 1 })}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="capacity">Celková kapacita</Label>
+                <Input
+                  id="capacity"
+                  type="number"
+                  min={1}
+                  value={formData.capacity}
+                  onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 1 })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reserved_spots">Již obsazeno</Label>
+                <Input
+                  id="reserved_spots"
+                  type="number"
+                  min={0}
+                  max={formData.capacity - 1}
+                  value={formData.reserved_spots || 0}
+                  onChange={(e) => setFormData({ ...formData, reserved_spots: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+            </div>
+
+            {/* Capacity preview */}
+            <div className="rounded-lg bg-muted/50 p-3 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Volná místa:</span>
+                <span className="font-semibold">
+                  {Math.max(0, (formData.capacity || 0) - (formData.reserved_spots || 0))} z {formData.capacity || 0}
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

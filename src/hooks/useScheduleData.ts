@@ -82,6 +82,10 @@ export function useScheduleData(days: number = 14, filter: FilterType = 'all') {
               }
 
               if (instance) {
+                // Include reserved_spots in the registered count for recurring classes
+                const reservedSpots = (recurringClass as { reserved_spots?: number }).reserved_spots || 0
+                const totalRegistered = registeredCount + reservedSpots
+
                 scheduleItems.push({
                   id: `recurring-${instance.id}`,
                   type: 'recurring',
@@ -91,7 +95,7 @@ export function useScheduleData(days: number = 14, filter: FilterType = 'all') {
                   time_start: recurringClass.time_start,
                   time_end: recurringClass.time_end,
                   capacity: instance.capacity_override ?? recurringClass.capacity,
-                  registeredCount,
+                  registeredCount: totalRegistered,
                   price: recurringClass.price,
                   recurringClass,
                   classInstance: instance,
@@ -158,6 +162,11 @@ export function useScheduleData(days: number = 14, filter: FilterType = 'all') {
             const { data: countData } = await supabase
               .rpc('get_workshop_registration_count', { p_workshop_id: workshop.id })
 
+            // Include reserved_spots in the registered count for workshops
+            const onlineRegistrations = countData || 0
+            const reservedSpots = (workshop as { reserved_spots?: number }).reserved_spots || 0
+            const totalRegistered = onlineRegistrations + reservedSpots
+
             scheduleItems.push({
               id: `workshop-${workshop.id}`,
               type: 'workshop',
@@ -167,7 +176,7 @@ export function useScheduleData(days: number = 14, filter: FilterType = 'all') {
               time_start: workshop.time_start,
               time_end: workshop.time_end,
               capacity: workshop.capacity,
-              registeredCount: countData || 0,
+              registeredCount: totalRegistered,
               price: workshop.price,
               workshop,
             })

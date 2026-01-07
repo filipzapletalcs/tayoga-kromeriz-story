@@ -69,6 +69,7 @@ export type Database = {
           is_active: boolean | null
           lesson_count: number | null
           price: number | null
+          reserved_spots: number
           time_end: string
           time_start: string
           title: string
@@ -82,6 +83,7 @@ export type Database = {
           is_active?: boolean | null
           lesson_count?: number | null
           price?: number | null
+          reserved_spots?: number
           time_end: string
           time_start: string
           title: string
@@ -95,6 +97,7 @@ export type Database = {
           is_active?: boolean | null
           lesson_count?: number | null
           price?: number | null
+          reserved_spots?: number
           time_end?: string
           time_start?: string
           title?: string
@@ -168,6 +171,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           price: number | null
+          reserved_spots: number
           time_end: string
           time_start: string
           title: string
@@ -180,6 +184,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           price?: number | null
+          reserved_spots?: number
           time_end: string
           time_start: string
           title: string
@@ -192,6 +197,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           price?: number | null
+          reserved_spots?: number
           time_end?: string
           time_start?: string
           title?: string
@@ -237,6 +243,36 @@ export type Database = {
           time_end?: string
           time_start?: string
           title?: string
+        }
+        Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          phone: string | null
+          message: string
+          created_at: string | null
+          is_read: boolean | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          phone?: string | null
+          message: string
+          created_at?: string | null
+          is_read?: boolean | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          phone?: string | null
+          message?: string
+          created_at?: string | null
+          is_read?: boolean | null
         }
         Relationships: []
       }
@@ -397,6 +433,9 @@ export type OneTimeClassInsert = Database['public']['Tables']['one_time_classes'
 export type OneTimeClassUpdate = Database['public']['Tables']['one_time_classes']['Update']
 
 export type PublicClassSchedule = Database['public']['Views']['public_class_schedule']['Row']
+
+export type ContactMessage = Database['public']['Tables']['contact_messages']['Row']
+export type ContactMessageInsert = Database['public']['Tables']['contact_messages']['Insert']
 
 // Schedule item types for unified calendar view
 export type LessonType = 'recurring' | 'one_time' | 'workshop'
