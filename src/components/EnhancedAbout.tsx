@@ -126,8 +126,8 @@ const EnhancedAbout = () => {
             </div>
           </div>
 
-          {/* Interactive Image Stack */}
-          <div className="scroll-reveal">
+          {/* Interactive Image Stack - z-20 to stay above sticky text */}
+          <div className="scroll-reveal relative z-20">
             <div className="relative h-[800px]">
               {/* Main large image */}
               <div
