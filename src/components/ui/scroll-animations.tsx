@@ -129,16 +129,25 @@ interface ParallaxProps {
   className?: string;
 }
 
-export const Parallax: React.FC<ParallaxProps> = ({ 
-  children, 
+export const Parallax: React.FC<ParallaxProps> = ({
+  children,
   offset = 50,
   className = ""
 }) => {
   const [scrollY, setScrollY] = React.useState(0);
 
   React.useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll);
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setScrollY(window.scrollY);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 

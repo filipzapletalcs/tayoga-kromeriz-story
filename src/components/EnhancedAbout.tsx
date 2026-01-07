@@ -5,15 +5,22 @@ const EnhancedAbout = () => {
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      const rect = sectionRef.current?.getBoundingClientRect();
-      if (rect) {
-        const scrolled = Math.max(0, window.innerHeight - rect.top);
-        setScrollY(scrolled);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const rect = sectionRef.current?.getBoundingClientRect();
+          if (rect) {
+            const scrolled = Math.max(0, window.innerHeight - rect.top);
+            setScrollY(scrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 

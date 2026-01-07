@@ -17,9 +17,16 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     sourcemap: false, // Disabled for production (20-30% smaller bundle)
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
         sourcemapExcludeSources: true, // Exclude source code from source maps (security)
+        manualChunks: {
+          // Separate vendor chunks for better caching
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['framer-motion'],
+          'supabase': ['@supabase/supabase-js'],
+        },
       },
     },
   },

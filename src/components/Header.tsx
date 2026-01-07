@@ -37,13 +37,20 @@ const Header: React.FC = () => {
   const isInitialLoadRef = useRef(true);
   const navigationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Scroll effects
+  // Scroll effects with throttling to avoid forced reflow
   useEffect(() => {
+    let ticking = false;
     const onScroll = () => {
-      const y = window.scrollY;
-      setIsScrolled(y > 50);
-      const h = document.body.scrollHeight - window.innerHeight;
-      setProgress(h > 0 ? Math.min(100, (y / h) * 100) : 0);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const y = window.scrollY;
+          setIsScrolled(y > 50);
+          const h = document.body.scrollHeight - window.innerHeight;
+          setProgress(h > 0 ? Math.min(100, (y / h) * 100) : 0);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });

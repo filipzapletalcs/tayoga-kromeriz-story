@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/micro-interactions';
 import { Award, Heart, BookOpen, Calendar } from 'lucide-react';
@@ -6,20 +6,6 @@ import instructorImage from '@/assets/IMG_4946 2.webp';
 
 const Instructor = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const [scrollY, setScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const rect = sectionRef.current?.getBoundingClientRect();
-      if (rect) {
-        const scrolled = Math.max(0, window.innerHeight - rect.top);
-        setScrollY(scrolled);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
