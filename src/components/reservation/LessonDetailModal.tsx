@@ -7,7 +7,6 @@ import {
   Users,
   Calendar,
   Sparkles,
-  X,
   User,
   Mail,
   Phone,
@@ -26,12 +25,13 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
-import type { ScheduleItem, RegistrationInsert } from '@/types/database'
+import type { ScheduleItem } from '@/types/database'
 import { getLessonTypeLabel } from '@/hooks/useScheduleData'
-import { useCreateRegistration } from '@/hooks/useRegistrations'
+import { useCreateRegistration, RegistrationWithNotification } from '@/hooks/useRegistrations'
 import { useCreateWorkshopRegistration } from '@/hooks/useWorkshops'
 import { supabase } from '@/lib/supabase'
 import { useQueryClient } from '@tanstack/react-query'
+import { sendRegistrationNotification } from '@/lib/notifications'
 
 interface LessonDetailModalProps {
   item: ScheduleItem | null
@@ -105,12 +105,20 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
 
     try {
       if (item.type === 'recurring' && item.classInstance) {
-        const registration: RegistrationInsert = {
+        const registration: RegistrationWithNotification = {
           class_instance_id: item.classInstance.id,
           name: formData.name.trim(),
           email: formData.email.trim(),
           phone: formData.phone.trim() || null,
           note: formData.note.trim() || null,
+          _notification: {
+            lessonType: 'recurring',
+            lessonTitle: item.title,
+            lessonDate: item.date,
+            timeStart: item.time_start,
+            timeEnd: item.time_end,
+            capacity: item.capacity,
+          },
         }
         await createClassRegistration.mutateAsync(registration)
       } else if (item.type === 'workshop' && item.workshop) {
@@ -120,6 +128,13 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
           email: formData.email.trim(),
           phone: formData.phone.trim() || undefined,
           note: formData.note.trim() || undefined,
+          _notification: {
+            lessonTitle: item.title,
+            lessonDate: item.workshop.date,
+            timeStart: item.time_start,
+            timeEnd: item.time_end,
+            capacity: item.capacity,
+          },
         })
       } else if (item.type === 'one_time' && item.oneTimeClass) {
         // Register for one-time class
@@ -142,6 +157,24 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
           })
 
         if (error) throw error
+
+        // Send notification for one-time class
+        const { data: count } = await supabase
+          .rpc('get_one_time_class_registration_count', { p_class_id: item.oneTimeClass.id })
+
+        sendRegistrationNotification({
+          lessonType: 'one_time',
+          lessonTitle: item.title,
+          lessonDate: item.date,
+          timeStart: item.time_start,
+          timeEnd: item.time_end,
+          participantName: formData.name.trim(),
+          participantEmail: formData.email.trim(),
+          participantPhone: formData.phone.trim() || null,
+          participantNote: formData.note.trim() || null,
+          registeredCount: count || 1,
+          capacity: item.capacity,
+        })
 
         // Invalidate queries
         queryClient.invalidateQueries({ queryKey: ['upcoming-one-time-classes'] })
@@ -188,15 +221,7 @@ const LessonDetailModal: React.FC<LessonDetailModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="relative">
-          {/* Close button */}
-          <button
-            onClick={handleClose}
-            className="absolute right-0 top-0 p-1 rounded-full hover:bg-muted transition-colors"
-          >
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-
+        <DialogHeader>
           {/* Type badge */}
           {(isWorkshop || isOneTime) && (
             <div className="mb-2">

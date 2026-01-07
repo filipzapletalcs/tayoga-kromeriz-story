@@ -1,6 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import type { Registration, RegistrationInsert } from '@/types/database'
+import type { Registration, RegistrationInsert, LessonType } from '@/types/database'
+import { sendRegistrationNotification } from '@/lib/notifications'
+
+// Extended registration type with notification metadata
+export interface RegistrationWithNotification extends RegistrationInsert {
+  _notification?: {
+    lessonType: LessonType
+    lessonTitle: string
+    lessonDate: Date
+    timeStart: string
+    timeEnd: string
+    capacity: number
+  }
+}
 
 // Types for joined queries
 interface ClassRegistrationWithDetails {
@@ -71,10 +84,13 @@ export function useCreateRegistration() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (registration: RegistrationInsert) => {
+    mutationFn: async (registration: RegistrationWithNotification) => {
+      // Extract notification metadata (not stored in DB)
+      const { _notification, ...registrationData } = registration
+
       // First check if there's capacity
       const { data: hasCapacity, error: capError } = await supabase
-        .rpc('check_capacity', { instance_id: registration.class_instance_id! })
+        .rpc('check_capacity', { instance_id: registrationData.class_instance_id! })
 
       if (capError) throw capError
       if (!hasCapacity) {
@@ -84,11 +100,33 @@ export function useCreateRegistration() {
       // Create registration
       const { data, error } = await supabase
         .from('registrations')
-        .insert(registration)
+        .insert(registrationData)
         .select()
         .single()
 
       if (error) throw error
+
+      // Send notification asynchronously (fire-and-forget)
+      if (_notification) {
+        // Get updated count after registration
+        const { data: count } = await supabase
+          .rpc('get_registration_count', { instance_id: registrationData.class_instance_id! })
+
+        sendRegistrationNotification({
+          lessonType: _notification.lessonType,
+          lessonTitle: _notification.lessonTitle,
+          lessonDate: _notification.lessonDate,
+          timeStart: _notification.timeStart,
+          timeEnd: _notification.timeEnd,
+          participantName: registrationData.name,
+          participantEmail: registrationData.email,
+          participantPhone: registrationData.phone,
+          participantNote: registrationData.note,
+          registeredCount: (count || 0),
+          capacity: _notification.capacity,
+        })
+      }
+
       return data
     },
     onSuccess: () => {

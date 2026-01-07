@@ -1,6 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import type { Workshop, WorkshopInsert, WorkshopUpdate, Registration } from '@/types/database'
+import { sendRegistrationNotification } from '@/lib/notifications'
+import { parseISO } from 'date-fns'
+
+// Workshop registration with notification metadata
+export interface WorkshopRegistrationParams {
+  workshop_id: string
+  name: string
+  email: string
+  phone?: string
+  note?: string
+  _notification?: {
+    lessonTitle: string
+    lessonDate: string  // ISO date string
+    timeStart: string
+    timeEnd: string
+    capacity: number
+  }
+}
 
 // Get all workshops (admin)
 export function useWorkshops() {
@@ -143,10 +161,13 @@ export function useCreateWorkshopRegistration() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (registration: { workshop_id: string; name: string; email: string; phone?: string; note?: string }) => {
+    mutationFn: async (registration: WorkshopRegistrationParams) => {
+      // Extract notification metadata
+      const { _notification, ...registrationData } = registration
+
       // Check capacity first
       const { data: hasCapacity, error: capError } = await supabase
-        .rpc('check_workshop_capacity', { p_workshop_id: registration.workshop_id })
+        .rpc('check_workshop_capacity', { p_workshop_id: registrationData.workshop_id })
 
       if (capError) throw capError
       if (!hasCapacity) {
@@ -157,16 +178,37 @@ export function useCreateWorkshopRegistration() {
       const { data, error } = await supabase
         .from('registrations')
         .insert({
-          workshop_id: registration.workshop_id,
-          name: registration.name,
-          email: registration.email,
-          phone: registration.phone || null,
-          note: registration.note || null,
+          workshop_id: registrationData.workshop_id,
+          name: registrationData.name,
+          email: registrationData.email,
+          phone: registrationData.phone || null,
+          note: registrationData.note || null,
         })
         .select()
         .single()
 
       if (error) throw error
+
+      // Send notification asynchronously (fire-and-forget)
+      if (_notification) {
+        const { data: count } = await supabase
+          .rpc('get_workshop_registration_count', { p_workshop_id: registrationData.workshop_id })
+
+        sendRegistrationNotification({
+          lessonType: 'workshop',
+          lessonTitle: _notification.lessonTitle,
+          lessonDate: parseISO(_notification.lessonDate),
+          timeStart: _notification.timeStart,
+          timeEnd: _notification.timeEnd,
+          participantName: registrationData.name,
+          participantEmail: registrationData.email,
+          participantPhone: registrationData.phone,
+          participantNote: registrationData.note,
+          registeredCount: count || 1,
+          capacity: _notification.capacity,
+        })
+      }
+
       return data
     },
     onSuccess: () => {
