@@ -159,6 +159,13 @@ All colors MUST be HSL.
     animation: fade-in-right 0.8s ease-out forwards;
   }
 
+  /* Animation delays for staggered effects */
+  .animate-delay-100 { animation-delay: 0.1s; opacity: 0; }
+  .animate-delay-200 { animation-delay: 0.2s; opacity: 0; }
+  .animate-delay-300 { animation-delay: 0.3s; opacity: 0; }
+  .animate-delay-400 { animation-delay: 0.4s; opacity: 0; }
+  .animate-delay-500 { animation-delay: 0.5s; opacity: 0; }
+
   .scroll-reveal {
     opacity: 0;
     transform: translateY(30px);
