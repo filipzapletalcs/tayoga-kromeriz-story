@@ -244,7 +244,7 @@ export async function getLessonWithRegistrations(item: ScheduleItem): Promise<Sc
       .from('class_instances')
       .select('*')
       .eq('id', instanceId)
-      .single()
+      .maybeSingle()
 
     if (instance?.is_cancelled) {
       throw new Error('Tato lekce byla zrušena')

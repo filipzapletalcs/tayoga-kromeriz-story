@@ -88,3 +88,5 @@ const Rezervace: React.FC = () => {
 }
 
 export default Rezervace
+// Named export for React Router lazy loading
+export { Rezervace as Component }

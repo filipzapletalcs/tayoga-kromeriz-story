@@ -41,13 +41,13 @@ export function useScheduleData(startDate: Date, endDate: Date, filter: FilterTy
             const matchingClasses = recurringClasses.filter(c => c.day_of_week === dayOfWeek)
 
             for (const recurringClass of matchingClasses) {
-              // Check if instance exists
+              // Check if instance exists (use maybeSingle to avoid 406 when not found)
               const { data: existing } = await supabase
                 .from('class_instances')
                 .select('*')
                 .eq('recurring_class_id', recurringClass.id)
                 .eq('date', dateStr)
-                .single()
+                .maybeSingle()
 
               let instance = existing
               let registeredCount = 0
@@ -72,12 +72,12 @@ export function useScheduleData(startDate: Date, endDate: Date, filter: FilterTy
                   continue
                 }
 
-                // Fetch the created instance
+                // Fetch the created instance (use maybeSingle to avoid 406)
                 const { data: newInstance } = await supabase
                   .from('class_instances')
                   .select('*')
                   .eq('id', instanceId)
-                  .single()
+                  .maybeSingle()
 
                 instance = newInstance
               }

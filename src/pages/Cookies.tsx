@@ -195,3 +195,6 @@ const Cookies = () => {
 };
 
 export default Cookies;
+
+// Named export for React Router lazy loading
+export { Cookies as Component }

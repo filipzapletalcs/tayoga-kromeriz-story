@@ -20,15 +20,16 @@ export const routes: RouteRecord[] = [
       { path: 'unikatnost', element: <Index /> },
       { path: 'rozvrh', element: <Index /> },
       { path: 'kontakt', element: <Index /> },
+      // Lazy loaded pages inside Layout (need QueryClientProvider)
+      {
+        path: 'rezervace',
+        lazy: () => import('./pages/Rezervace'),
+      },
+      {
+        path: 'cookies',
+        lazy: () => import('./pages/Cookies'),
+      },
     ],
-  },
-  {
-    path: '/rezervace',
-    lazy: () => import('./pages/Rezervace'),
-  },
-  {
-    path: '/cookies',
-    lazy: () => import('./pages/Cookies'),
   },
   {
     path: '/admin/*',
@@ -50,9 +51,51 @@ export const routes: RouteRecord[] = [
 export const createRoot = ViteReactSSG(
   { routes, basename: import.meta.env.BASE_URL },
   ({ isClient }) => {
-    // Client-only initialization
     if (isClient) {
-      // GTM and analytics are already deferred in index.html
+      // Handle chunk loading failures after new deployments
+      // When a new version is deployed, old cached JS tries to load non-existent chunks
+      // This causes "Failed to fetch dynamically imported module" errors
+      window.addEventListener('error', (event) => {
+        const isChunkError =
+          event.message?.includes('Failed to fetch dynamically imported module') ||
+          event.message?.includes('Loading chunk') ||
+          event.message?.includes('Loading CSS chunk');
+
+        if (isChunkError) {
+          // Prevent infinite reload loop using sessionStorage
+          const reloadKey = 'chunk_reload_' + window.location.pathname;
+          const lastReload = sessionStorage.getItem(reloadKey);
+          const now = Date.now();
+
+          // Only reload if we haven't reloaded in the last 10 seconds
+          if (!lastReload || (now - parseInt(lastReload)) > 10000) {
+            sessionStorage.setItem(reloadKey, now.toString());
+            console.log('[TaYoga] New version detected, reloading...');
+            window.location.reload();
+          }
+        }
+      });
+
+      // Also handle unhandled promise rejections (dynamic imports)
+      window.addEventListener('unhandledrejection', (event) => {
+        const reason = event.reason?.message || String(event.reason);
+        const isChunkError =
+          reason.includes('Failed to fetch dynamically imported module') ||
+          reason.includes('Loading chunk') ||
+          reason.includes('MIME type');
+
+        if (isChunkError) {
+          const reloadKey = 'chunk_reload_' + window.location.pathname;
+          const lastReload = sessionStorage.getItem(reloadKey);
+          const now = Date.now();
+
+          if (!lastReload || (now - parseInt(lastReload)) > 10000) {
+            sessionStorage.setItem(reloadKey, now.toString());
+            console.log('[TaYoga] New version detected, reloading...');
+            window.location.reload();
+          }
+        }
+      });
     }
   }
 )

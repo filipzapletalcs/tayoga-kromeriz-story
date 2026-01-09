@@ -75,3 +75,6 @@ const AdminRoutes = () => (
 );
 
 export default AdminRoutes;
+
+// Named export for React Router lazy loading
+export { AdminRoutes as Component }

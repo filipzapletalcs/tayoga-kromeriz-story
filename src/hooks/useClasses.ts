@@ -85,13 +85,13 @@ export function useUpcomingClasses(days: number = 14) {
         upcomingDates.map(async ({ class: c, date }) => {
           const dateStr = format(date, 'yyyy-MM-dd')
 
-          // Check if instance exists
+          // Check if instance exists (maybeSingle to avoid 406 when not found)
           const { data: existing } = await supabase
             .from('class_instances')
             .select('*')
             .eq('recurring_class_id', c.id)
             .eq('date', dateStr)
-            .single()
+            .maybeSingle()
 
           if (existing) {
             // Get registration count
@@ -120,7 +120,7 @@ export function useUpcomingClasses(days: number = 14) {
               .select('*')
               .eq('recurring_class_id', c.id)
               .eq('date', dateStr)
-              .single()
+              .maybeSingle()
 
             return {
               instance: retry as ClassInstance,
