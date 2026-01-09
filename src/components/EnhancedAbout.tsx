@@ -135,8 +135,10 @@ const EnhancedAbout = () => {
                 style={{ transform: `translateY(${scrollY * 0.1}px)` }}
               >
                 <img
-                  src="/ee1fb7e5-68a6-4391-adcc-02c334ca1998.JPG"
+                  src="/yoga-nature.webp"
                   alt="Jóga v přírodě u vodopádu"
+                  width={1200}
+                  height={800}
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
@@ -149,8 +151,10 @@ const EnhancedAbout = () => {
                 style={{ transform: `translateY(${scrollY * -0.05}px) rotate(5deg)` }}
               >
                 <img
-                  src="/DSC_0011.jpg"
+                  src="/studio-interior.webp"
                   alt="Studio prostředí"
+                  width={1200}
+                  height={800}
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />

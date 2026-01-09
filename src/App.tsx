@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,11 +6,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/use-theme";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
-import CustomCursor from "@/components/CustomCursor";
 import CookieConsent from "@/components/CookieConsent";
 import Layout from "@/components/Layout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+
+// Lazy load CustomCursor - only needed on desktop
+const CustomCursor = lazy(() => import("@/components/CustomCursor"));
 
 // Lazy-loaded pages with Supabase (defers ~48KB supabase bundle)
 const Rezervace = lazy(() => import("./pages/Rezervace"));
@@ -28,12 +30,37 @@ const LoadingFallback = () => (
 
 const queryClient = new QueryClient();
 
+// Desktop-only cursor wrapper
+const DesktopCursor = () => {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    // Only show on desktop (min-width: 769px and has fine pointer)
+    const checkDesktop = () => {
+      const hasPointer = window.matchMedia('(pointer: fine)').matches;
+      const isWide = window.matchMedia('(min-width: 769px)').matches;
+      setIsDesktop(hasPointer && isWide);
+    };
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
+
+  if (!isDesktop) return null;
+
+  return (
+    <Suspense fallback={null}>
+      <CustomCursor />
+    </Suspense>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="system" storageKey="tayoga-ui-theme">
       <TooltipProvider>
         <ErrorBoundary>
-          <CustomCursor />
+          <DesktopCursor />
           <CookieConsent />
           <Toaster />
           <Sonner />

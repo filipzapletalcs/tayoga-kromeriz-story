@@ -173,6 +173,8 @@ const Header: React.FC = () => {
             <img
               src={logoSvg}
               alt="TaYoga Kroměříž"
+              width={40}
+              height={40}
               className="h-10 w-auto"
             />
           </button>

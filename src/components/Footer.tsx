@@ -12,6 +12,8 @@ const Footer = () => {
             <img
               src={footerLogo}
               alt="TaYoga"
+              width={160}
+              height={160}
               className="h-40 w-auto mb-6 mx-auto"
             />
             <p className="text-muted-foreground leading-relaxed text-base">

@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { FadeIn, StaggerContainer, StaggerItem } from '@/components/ui/micro-interactions';
 import { Award, Heart, BookOpen, Calendar } from 'lucide-react';
-import instructorImage from '@/assets/IMG_4946 2.webp';
+import instructorImage from '@/assets/instructor.webp';
 
 const Instructor = () => {
   const sectionRef = useRef<HTMLElement>(null);
@@ -158,6 +158,8 @@ const Instructor = () => {
                     <img
                       src={instructorImage}
                       alt="Barbora Zapletalová - certifikovaná lektorka jógy v TaYoga Kroměříž, učitelka Iyengar jógy"
+                      width={800}
+                      height={450}
                       className="w-full h-[450px] object-cover object-top transition-transform duration-700 group-hover:scale-105"
                       loading="lazy"
                     />

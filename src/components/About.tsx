@@ -74,10 +74,13 @@ const About = () => {
           {/* Image */}
           <div className="scroll-reveal">
             <div className="relative">
-              <img 
+              <img
                 src={yogaPose}
                 alt="Iyengar jóga pozice"
+                width={800}
+                height={600}
                 className="w-full h-[600px] object-cover rounded-lg card-shadow"
+                loading="lazy"
               />
               <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-accent-gold rounded-full opacity-20"></div>
               <div className="absolute -top-6 -left-6 w-16 h-16 bg-primary rounded-full opacity-30"></div>

@@ -15,9 +15,12 @@ const IyengarQuote = () => {
                 {/* Image side */}
                 <div className="relative h-[500px] md:h-[600px] overflow-hidden">
                   <img
-                    src="/Screenshot 2025-09-24 at 17.34.55.png"
+                    src="/iyengar-quote.webp"
                     alt="B.K.S. Iyengar"
+                    width={1200}
+                    height={952}
                     className="w-full h-full object-cover filter sepia-[30%]"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
                   <div className="absolute bottom-6 left-6 text-white">
