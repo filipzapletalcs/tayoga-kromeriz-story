@@ -211,7 +211,7 @@ const Header: React.FC = () => {
               className={useTransparentHeader ? "text-white hover:bg-white/10 dark:text-foreground dark:hover:bg-accent" : ""}
               iconClassName={useTransparentHeader ? "text-white dark:text-foreground" : ""}
             />
-            <Link to="/rezervace">
+            <Link to="/rezervace" aria-label="Rezervovat lekci">
               <Button variant="default" className="hidden sm:inline-flex">
                 Rezervovat lekci <ArrowRight className="ml-1 h-4 w-4" />
               </Button>
@@ -258,7 +258,7 @@ const Header: React.FC = () => {
                     <span className="h-[2px] w-6 rounded bg-primary/60" aria-hidden />
                   </button>
                 ))}
-                <Link to="/rezervace" className="mt-2">
+                <Link to="/rezervace" className="mt-2" aria-label="Rezervovat lekci">
                   <Button className="w-full">
                     <Phone className="mr-2 h-4 w-4" /> Rezervovat lekci
                   </Button>

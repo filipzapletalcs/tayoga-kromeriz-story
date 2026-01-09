@@ -124,8 +124,8 @@ const CookieConsent = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-[9999] max-w-sm">
-      <div className="bg-background rounded-xl shadow-2xl p-5 border border-border">
+    <div className="fixed bottom-4 left-4 right-4 z-[9999] sm:left-auto sm:right-4 sm:max-w-sm">
+      <div className="bg-background rounded-xl p-5 border border-border">
         {!showDetails ? (
           <>
             <h3 className="text-lg font-semibold mb-3 text-foreground">
@@ -136,7 +136,7 @@ const CookieConsent = () => {
               uživatelského prostředí. Přečtěte si naše{" "}
               <a
                 href="/cookies"
-                className="text-primary font-medium hover:underline"
+                className="text-foreground font-semibold hover:underline"
               >
                 zásady používání cookies
               </a>

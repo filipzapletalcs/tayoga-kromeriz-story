@@ -45,7 +45,8 @@ const Hero = () => {
           alt=""
           width={1280}
           height={720}
-          fetchPriority="high"
+          // @ts-expect-error - fetchpriority is valid HTML attribute
+          fetchpriority="high"
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
         />
         {/* Video - lazy loaded */}

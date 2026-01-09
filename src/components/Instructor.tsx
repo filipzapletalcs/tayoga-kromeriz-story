@@ -97,8 +97,8 @@ const Instructor = () => {
 
               <Card className="bg-primary text-primary-foreground card-shadow">
                 <CardContent className="p-6">
-                  <h4 className="font-semibold mb-3 text-lg">Pravidelné vzdělávání</h4>
-                  <p className="text-sm opacity-90 mb-4">
+                  <h3 className="font-semibold mb-3 text-lg">Pravidelné vzdělávání</h3>
+                  <p className="text-sm mb-4">
                     Pravidelně se vzdělávám na workshopech s předními světovými učiteli:
                   </p>
                   <div className="space-y-2">
