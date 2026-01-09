@@ -7,7 +7,7 @@ const Cookies = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 bg-background">
-        <div className="container mx-auto px-6 py-16 max-w-3xl">
+        <div className="container mx-auto px-6 pt-24 pb-16 max-w-3xl">
           <h1 className="text-3xl font-bold text-foreground mb-8">
             Zásady používání cookies
           </h1>

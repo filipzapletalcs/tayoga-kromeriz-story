@@ -142,9 +142,13 @@ const Header: React.FC = () => {
     return activeId === id;
   };
 
+  // Only use transparent/white header on main page with hero
+  const isMainPage = location.pathname === "/" || NAV.some(item => item.path === location.pathname);
+  const useTransparentHeader = !isScrolled && isMainPage;
+
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? "bg-background/95 backdrop-blur-sm border-b border-border card-shadow" : "bg-transparent"
+      !useTransparentHeader ? "bg-background/95 backdrop-blur-sm border-b border-border card-shadow" : "bg-transparent"
     }`}>
       {/* Skip link pro přístupnost */}
       <a href="#home" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] rounded bg-primary px-3 py-2 text-sm text-primary-foreground">
@@ -182,9 +186,9 @@ const Header: React.FC = () => {
                 className={`relative transition-colors duration-200 hover:text-primary ${
                   isActive(item.id)
                     ? "text-primary"
-                    : isScrolled
-                      ? "text-foreground"
-                      : "text-white dark:text-foreground"
+                    : useTransparentHeader
+                      ? "text-white dark:text-foreground"
+                      : "text-foreground"
                 }`}
               >
                 {item.label}
@@ -202,8 +206,8 @@ const Header: React.FC = () => {
           {/* CTA + theme toggle + mobile toggle */}
           <div className="flex items-center gap-3">
             <ThemeToggle
-              className={!isScrolled ? "text-white hover:bg-white/10 dark:text-foreground dark:hover:bg-accent" : ""}
-              iconClassName={!isScrolled ? "text-white dark:text-foreground" : ""}
+              className={useTransparentHeader ? "text-white hover:bg-white/10 dark:text-foreground dark:hover:bg-accent" : ""}
+              iconClassName={useTransparentHeader ? "text-white dark:text-foreground" : ""}
             />
             <Link to="/rezervace">
               <Button variant="default" className="hidden sm:inline-flex">
@@ -212,9 +216,9 @@ const Header: React.FC = () => {
             </Link>
             <button
               className={`md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md border transition-colors duration-200 ${
-                isScrolled
-                  ? "bg-background hover:bg-accent border-border"
-                  : "bg-white/10 hover:bg-white/20 border-white/30 text-white dark:bg-background dark:hover:bg-accent dark:border-border dark:text-foreground"
+                useTransparentHeader
+                  ? "bg-white/10 hover:bg-white/20 border-white/30 text-white dark:bg-background dark:hover:bg-accent dark:border-border dark:text-foreground"
+                  : "bg-background hover:bg-accent border-border"
               }`}
               onClick={() => setMobileOpen((s) => !s)}
               aria-expanded={mobileOpen}
