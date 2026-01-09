@@ -1,8 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { ScrollReveal, fadeLeftVariants, Floating } from '@/components/ui/scroll-animations';
 import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 
 const Hero = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -10,22 +14,51 @@ const Hero = () => {
     }
   };
 
+  // Lazy load video after page is interactive
+  useEffect(() => {
+    const loadVideo = () => {
+      if (videoRef.current) {
+        videoRef.current.src = '/tayoga_studio_kromeriz.mp4';
+        videoRef.current.load();
+        videoRef.current.play().catch(() => {
+          // Autoplay blocked, user will need to interact
+        });
+        setVideoLoaded(true);
+      }
+    };
+
+    // Load video after idle or after 2 seconds
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(loadVideo, { timeout: 2000 });
+    } else {
+      setTimeout(loadVideo, 1500);
+    }
+  }, []);
+
   return (
     <section id="home" className="min-h-screen relative overflow-hidden dark">
-      {/* Background Video */}
+      {/* Background - Poster first, then video */}
       <div className="absolute inset-0">
+        {/* Static poster image - loads immediately for LCP */}
+        <img
+          src="/Tayoga_Hero.jpg"
+          alt=""
+          width={1280}
+          height={720}
+          fetchPriority="high"
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
+        />
+        {/* Video - lazy loaded */}
         <video
-          autoPlay
+          ref={videoRef}
           muted
           loop
           playsInline
-          poster="/Tayoga_Hero.jpg"
+          preload="none"
           aria-label="Video TaYoga studia - jógová lekce v Kroměříži"
           title="TaYoga Kroměříž - jógové studio"
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src="/tayoga_studio_kromeriz.mp4" type="video/mp4" />
-        </video>
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+        />
         <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/55 to-background/30" />
       </div>
 
