@@ -34,6 +34,13 @@ export const routes: RouteRecord[] = [
     path: '/admin/*',
     lazy: () => import('./pages/admin/AdminRoutes'),
   },
+  // Explicit 404 route for SSG to generate 404.html (Vercel will serve this with HTTP 404)
+  // Head component in NotFound handles SEO meta tags
+  {
+    path: '/404',
+    element: <NotFound />,
+  },
+  // Catch-all for client-side navigation to non-existent routes
   {
     path: '*',
     element: <NotFound />,
