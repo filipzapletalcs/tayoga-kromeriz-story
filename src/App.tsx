@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 
 // Lazy-loaded pages with Supabase (defers ~48KB supabase bundle)
 const Rezervace = lazy(() => import("./pages/Rezervace"));
+const Cookies = lazy(() => import("./pages/Cookies"));
 
 // Lazy-loaded admin routes with AdminProvider (defers Supabase + admin code)
 const AdminRoutes = lazy(() => import("./pages/admin/AdminRoutes"));
@@ -53,6 +54,13 @@ const App = () => (
               <Route path="/rezervace" element={
                 <Suspense fallback={<LoadingFallback />}>
                   <Rezervace />
+                </Suspense>
+              } />
+
+              {/* Cookies policy page */}
+              <Route path="/cookies" element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <Cookies />
                 </Suspense>
               } />
 

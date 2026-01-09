@@ -1,5 +1,6 @@
 import footerLogo from '@/assets/TaYoga_logo_footer.svg';
 import { Facebook, Instagram } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -140,6 +141,11 @@ const Footer = () => {
 
         <div className="border-t border-border pt-8 text-center text-muted-foreground">
           <p>&copy; 2025 TaYoga Studio. Všechna práva vyhrazena.</p>
+          <p className="mt-2 text-sm">
+            <Link to="/cookies" className="hover:text-foreground transition-colors">
+              Zásady cookies
+            </Link>
+          </p>
         </div>
       </div>
     </footer>

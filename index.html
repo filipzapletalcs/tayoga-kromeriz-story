@@ -1,32 +1,67 @@
 <!doctype html>
 <html lang="cs">
-  <!-- Deploy trigger: 2025-01-27 22:52 -->
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Google tag (gtag.js) with Consent Mode default (denied) -->
+    <!-- Google Consent Mode V2 - Default Settings (must be before GTM) -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+
+      // Set default consent to denied for EU compliance
       gtag('consent', 'default', {
-        ad_personalization: 'denied',
-        ad_user_data: 'denied',
-        ad_storage: 'denied',
-        analytics_storage: 'denied',
-        functionality_storage: 'granted',
-        security_storage: 'granted'
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'analytics_storage': 'denied',
+        'functionality_storage': 'granted',
+        'personalization_storage': 'denied',
+        'security_storage': 'granted',
+        'wait_for_update': 500
       });
+
+      // Apply saved choice from localStorage (if exists)
+      try {
+        var raw = localStorage.getItem('cookieConsent_v1');
+        var saved = raw ? JSON.parse(raw) : null;
+
+        if (saved) {
+          gtag('consent', 'update', {
+            'ad_storage': saved.marketing ? 'granted' : 'denied',
+            'ad_user_data': saved.marketing ? 'granted' : 'denied',
+            'ad_personalization': saved.marketing ? 'granted' : 'denied',
+            'analytics_storage': saved.analytics ? 'granted' : 'denied',
+            'personalization_storage': saved.preferences ? 'granted' : 'denied',
+            'functionality_storage': 'granted',
+            'security_storage': 'granted'
+          });
+
+          // Push consent_updated event
+          window.dataLayer.push({
+            'event': 'consent_updated',
+            'marketing': saved.marketing,
+            'analytics': saved.analytics,
+            'preferences': saved.preferences
+          });
+        }
+      } catch (e) {}
+
+      // Enable URL passthrough for better conversion tracking
+      gtag('set', 'url_passthrough', true);
+
+      // Enable ads data redaction when consent denied
+      gtag('set', 'ads_data_redaction', true);
     </script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-MWR6S1L6HN"></script>
-    <script>
-      gtag('js', new Date());
-      gtag('config', 'G-MWR6S1L6HN', {
-        'anonymize_ip': true,
-        'cookie_flags': 'SameSite=None;Secure',
-        'allow_google_signals': false,
-        'allow_ad_personalization_signals': false
-      });
-    </script>
+    <!-- End Google Consent Mode V2 -->
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-WNNSZXN7');</script>
+    <!-- End Google Tag Manager -->
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TaYoga - Jógové studio Kroměříž | Barbora Zapletalová</title>
     <meta name="description" content="Jógové studio TaYoga ve Vodní ulici v Kroměříži. Kurzy jógy s pomůckami pro začátečníky, pokročilé i seniory. Lektorka Barbora Zapletalová." />
     <meta name="author" content="TaYoga Studio" />
@@ -74,6 +109,10 @@
   </head>
 
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WNNSZXN7"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

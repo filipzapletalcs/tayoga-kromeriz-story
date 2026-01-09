@@ -1,77 +1,237 @@
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 
+// Extend Window interface for dataLayer and gtag
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
+    dataLayer: unknown[];
+    gtag: (...args: unknown[]) => void;
   }
 }
 
-const CONSENT_KEY = "tayoga-consent";
+// Cookie consent types
+interface ConsentSettings {
+  analytics: boolean;
+  preferences: boolean;
+}
 
-type ConsentState = "granted" | "denied" | null;
+const CONSENT_STORAGE_KEY = "cookieConsent_v1";
 
-export default function CookieConsent() {
-  const [open, setOpen] = useState(false);
-  const [saved, setSaved] = useState<ConsentState>(null);
+// Initialize gtag function globally - MUST use function() and arguments, not arrow function
+// GTM requires the arguments object, not an array
+const initGtag = () => {
+  window.dataLayer = window.dataLayer || [];
+  if (!window.gtag) {
+    window.gtag = function () {
+      // eslint-disable-next-line prefer-rest-params
+      window.dataLayer.push(arguments);
+    };
+  }
+};
+
+// Update Google Consent Mode V2 and push event to dataLayer
+const setConsent = (analytics: boolean, preferences: boolean) => {
+  // Initialize gtag if not already done
+  initGtag();
+
+  // Build consent payload for Consent Mode V2
+  // Note: marketing cookies are not used on this site
+  const consentPayload = {
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+    analytics_storage: analytics ? "granted" : "denied",
+    personalization_storage: preferences ? "granted" : "denied",
+    functionality_storage: "granted",
+    security_storage: "granted",
+  };
+
+  // CRITICAL: Call gtag consent update - this is what GTM needs to see
+  window.gtag("consent", "update", consentPayload);
+
+  // Save to localStorage for persistence
+  const saved = {
+    marketing: false, // Always false - not used
+    analytics: !!analytics,
+    preferences: !!preferences,
+    ts: new Date().getTime(),
+  };
+  localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(saved));
+
+  // Push consent_updated event to dataLayer (for custom triggers)
+  window.dataLayer.push({
+    event: "consent_updated",
+    marketing: false,
+    analytics: saved.analytics,
+    preferences: saved.preferences,
+  });
+};
+
+// Load consent from localStorage
+const loadConsent = (): ConsentSettings | null => {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = localStorage.getItem(CONSENT_STORAGE_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw);
+    return {
+      analytics: !!saved.analytics,
+      preferences: !!saved.preferences,
+    };
+  } catch {
+    return null;
+  }
+};
+
+const CookieConsent = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [settings, setSettings] = useState<ConsentSettings>({
+    analytics: false,
+    preferences: false,
+  });
 
   useEffect(() => {
-    const raw = localStorage.getItem(CONSENT_KEY);
-    if (raw === "granted" || raw === "denied") {
-      setSaved(raw);
-      applyConsent(raw);
-      setOpen(false);
+    const savedConsent = loadConsent();
+    if (savedConsent) {
+      setSettings(savedConsent);
+      // Apply saved consent on load
+      setConsent(savedConsent.analytics, savedConsent.preferences);
     } else {
-      setOpen(true);
+      setIsVisible(true);
     }
   }, []);
 
-  const applyConsent = (state: Exclude<ConsentState, null>) => {
-    if (typeof window !== "undefined" && typeof window.gtag === "function") {
-      window.gtag("consent", "update", {
-        analytics_storage: state === "granted" ? "granted" : "denied",
-        // ponecháme reklamní souhlas zamítnutý (nepoužíváme reklamní služby)
-        ad_personalization: "denied",
-        ad_user_data: "denied",
-        ad_storage: "denied",
-      });
-    }
-  };
-
+  // Accept all cookies
   const acceptAll = () => {
-    localStorage.setItem(CONSENT_KEY, "granted");
-    setSaved("granted");
-    applyConsent("granted");
-    setOpen(false);
+    setConsent(true, true);
+    setIsVisible(false);
   };
 
+  // Reject all optional cookies
   const rejectAll = () => {
-    localStorage.setItem(CONSENT_KEY, "denied");
-    setSaved("denied");
-    applyConsent("denied");
-    setOpen(false);
+    setConsent(false, false);
+    setIsVisible(false);
   };
 
-  if (!open) return null;
+  // Save custom settings
+  const saveSettings = () => {
+    setConsent(settings.analytics, settings.preferences);
+    setIsVisible(false);
+    setShowDetails(false);
+  };
+
+  if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 pb-[env(safe-area-inset-bottom)]">
-      <div className="mx-auto max-w-4xl p-4 text-sm flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-        <div className="text-gray-800 sm:flex-1">
-          <p className="hidden sm:block">
-            Používáme pouze analytické cookies pro zlepšení webu. Prosím
-            potvrďte, zda s tím souhlasíte. Více informací najdete v zásadách
-            ochrany osobních údajů.
-          </p>
-          <p className="sm:hidden">
-            Používáme analytické cookies pro zlepšení webu. Souhlasíte?
-          </p>
-        </div>
-        <div className="flex gap-2 sm:shrink-0 w-full sm:w-auto">
-          <Button className="w-1/2 sm:w-auto" variant="outline" onClick={rejectAll}>Pouze nezbytné</Button>
-          <Button className="w-1/2 sm:w-auto" onClick={acceptAll}>Povolit analytické</Button>
-        </div>
+    <div className="fixed bottom-4 right-4 z-[9999] max-w-sm">
+      <div className="bg-background rounded-xl shadow-2xl p-5 border border-border">
+        {!showDetails ? (
+          <>
+            <h3 className="text-lg font-semibold mb-3 text-foreground">
+              Nastavení cookies
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+              Používáme pouze analytické cookies pro zlepšení vašeho
+              uživatelského prostředí. Přečtěte si naše{" "}
+              <a
+                href="/cookies"
+                className="text-primary font-medium hover:underline"
+              >
+                zásady používání cookies
+              </a>
+              .
+            </p>
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={rejectAll}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Odmítnout vše
+              </button>
+              <button
+                onClick={() => setShowDetails(true)}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Vlastní
+              </button>
+              <button
+                onClick={acceptAll}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Přijmout vše
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h3 className="text-lg font-semibold mb-3 text-foreground">
+              Vlastní nastavení
+            </h3>
+            <div className="space-y-3 mb-4">
+              {/* Necessary - always on */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground">Nezbytné</span>
+                <div className="w-10 h-5 bg-primary rounded-full relative cursor-not-allowed">
+                  <div className="absolute right-0.5 top-0.5 w-4 h-4 bg-background rounded-full" />
+                </div>
+              </div>
+              {/* Analytics */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground">Analytické</span>
+                <button
+                  onClick={() =>
+                    setSettings((s) => ({ ...s, analytics: !s.analytics }))
+                  }
+                  className={`w-10 h-5 rounded-full relative transition-colors ${
+                    settings.analytics ? "bg-primary" : "bg-muted"
+                  }`}
+                >
+                  <div
+                    className={`absolute top-0.5 w-4 h-4 bg-background rounded-full transition-all ${
+                      settings.analytics ? "right-0.5" : "left-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+              {/* Preferences */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground">Preferenční</span>
+                <button
+                  onClick={() =>
+                    setSettings((s) => ({ ...s, preferences: !s.preferences }))
+                  }
+                  className={`w-10 h-5 rounded-full relative transition-colors ${
+                    settings.preferences ? "bg-primary" : "bg-muted"
+                  }`}
+                >
+                  <div
+                    className={`absolute top-0.5 w-4 h-4 bg-background rounded-full transition-all ${
+                      settings.preferences ? "right-0.5" : "left-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={() => setShowDetails(false)}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Zpět
+              </button>
+              <button
+                onClick={saveSettings}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Uložit nastavení
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default CookieConsent;
