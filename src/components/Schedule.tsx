@@ -16,9 +16,8 @@ const LessonPicker = lazy(() => import('@/components/LessonPicker'));
 const LessonDetailModal = lazy(() => import('@/components/reservation/LessonDetailModal'));
 
 const Schedule = () => {
-  // Responsive months count
-  const initialMonths = typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches ? 1 : 2;
-  const [months, setMonths] = React.useState(initialMonths);
+  // Responsive months count - start with 2 (SSR default), update on client
+  const [months, setMonths] = React.useState(2);
 
   // Data from hook
   const { weeklySchedule, lessonsByDate, lessonDates, isLoading, error } = useUpcomingSchedule(6);
