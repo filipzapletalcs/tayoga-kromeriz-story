@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AdminProvider } from "@/hooks/useAdmin";
 
 // Lazy-loaded admin pages
@@ -13,16 +14,20 @@ const AdminCalendar = lazy(() => import("./AdminCalendar"));
 const AdminVisitors = lazy(() => import("./AdminVisitors"));
 const AdminMessages = lazy(() => import("./AdminMessages"));
 
+// Create QueryClient for admin routes
+const queryClient = new QueryClient();
+
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="text-muted-foreground">Načítání...</div>
   </div>
 );
 
-// AdminRoutes wraps all admin routes with AdminProvider
-// This ensures Supabase is only loaded when accessing admin pages
+// AdminRoutes wraps all admin routes with QueryClientProvider and AdminProvider
+// This ensures React Query and Supabase are only loaded when accessing admin pages
 const AdminRoutes = () => (
-  <AdminProvider>
+  <QueryClientProvider client={queryClient}>
+    <AdminProvider>
     <Routes>
       <Route index element={
         <Suspense fallback={<LoadingFallback />}>
@@ -71,7 +76,8 @@ const AdminRoutes = () => (
         } />
       </Route>
     </Routes>
-  </AdminProvider>
+    </AdminProvider>
+  </QueryClientProvider>
 );
 
 export default AdminRoutes;
