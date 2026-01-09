@@ -97,12 +97,10 @@ export function useCreateRegistration() {
         throw new Error('Lekce je již plně obsazená')
       }
 
-      // Create registration
-      const { data, error } = await supabase
+      // Create registration (no .select() needed - avoids RLS issues for anon users)
+      const { error } = await supabase
         .from('registrations')
         .insert(registrationData)
-        .select()
-        .single()
 
       if (error) throw error
 
@@ -127,7 +125,7 @@ export function useCreateRegistration() {
         })
       }
 
-      return data
+      return { success: true }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['upcoming-classes'] })

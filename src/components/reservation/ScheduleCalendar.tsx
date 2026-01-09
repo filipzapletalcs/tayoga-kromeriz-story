@@ -1,23 +1,36 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, Loader2, Info } from 'lucide-react'
+import { startOfMonth, endOfMonth, startOfDay, addMonths, subMonths, isSameMonth, max } from 'date-fns'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useScheduleData, FilterType } from '@/hooks/useScheduleData'
 import type { ScheduleItem } from '@/types/database'
 import ScheduleFilters from './ScheduleFilters'
 import DaySection from './DaySection'
 import LessonDetailModal from './LessonDetailModal'
+import MonthNavigation from './MonthNavigation'
 
-interface ScheduleCalendarProps {
-  days?: number
-}
-
-const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ days = 14 }) => {
+const ScheduleCalendar: React.FC = () => {
+  const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()))
   const [filter, setFilter] = useState<FilterType>('all')
   const [selectedItem, setSelectedItem] = useState<ScheduleItem | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
 
-  const { data: scheduleData, isLoading, error } = useScheduleData(days, filter)
+  // Calculate date range for the month
+  // For current month, start from today; for future months, start from 1st
+  const today = startOfDay(new Date())
+  const monthStart = startOfMonth(currentMonth)
+  const startDate = max([monthStart, today])
+  const endDate = endOfMonth(currentMonth)
+
+  const { data: scheduleData, isLoading, error } = useScheduleData(startDate, endDate, filter)
+
+  // Navigation handlers
+  const goToPreviousMonth = () => setCurrentMonth(prev => subMonths(prev, 1))
+  const goToNextMonth = () => setCurrentMonth(prev => addMonths(prev, 1))
+  const goToToday = () => setCurrentMonth(startOfMonth(new Date()))
+
+  const canGoPrevious = !isSameMonth(currentMonth, new Date())
 
   const handleSelectItem = (item: ScheduleItem) => {
     setSelectedItem(item)
@@ -58,6 +71,14 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ days = 14 }) => {
 
   return (
     <div className="w-full max-w-5xl mx-auto">
+      {/* Month Navigation */}
+      <MonthNavigation
+        currentMonth={currentMonth}
+        onPreviousMonth={canGoPrevious ? goToPreviousMonth : () => {}}
+        onNextMonth={goToNextMonth}
+        onToday={goToToday}
+      />
+
       {/* Filters */}
       <ScheduleFilters
         activeFilter={filter}

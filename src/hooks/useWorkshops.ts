@@ -20,6 +20,11 @@ export interface WorkshopRegistrationParams {
   }
 }
 
+// Workshop with registration count
+export interface WorkshopWithCount extends Workshop {
+  registeredCount: number
+}
+
 // Get all workshops (admin)
 export function useWorkshops() {
   return useQuery({
@@ -32,6 +37,36 @@ export function useWorkshops() {
 
       if (error) throw error
       return data as Workshop[]
+    },
+  })
+}
+
+// Get all workshops with registration counts (admin)
+export function useWorkshopsWithCounts() {
+  return useQuery({
+    queryKey: ['workshops-with-counts'],
+    queryFn: async () => {
+      const { data: workshops, error } = await supabase
+        .from('workshops')
+        .select('*')
+        .order('date', { ascending: true })
+
+      if (error) throw error
+
+      // Get registration counts for each workshop
+      const workshopsWithCounts = await Promise.all(
+        (workshops as Workshop[]).map(async (workshop) => {
+          const { data: count } = await supabase
+            .rpc('get_workshop_registration_count', { p_workshop_id: workshop.id })
+
+          return {
+            ...workshop,
+            registeredCount: count ?? 0,
+          } as WorkshopWithCount
+        })
+      )
+
+      return workshopsWithCounts
     },
   })
 }
@@ -174,8 +209,8 @@ export function useCreateWorkshopRegistration() {
         throw new Error('Workshop je již plně obsazen')
       }
 
-      // Create registration
-      const { data, error } = await supabase
+      // Create registration (no .select() needed - avoids RLS issues for anon users)
+      const { error } = await supabase
         .from('registrations')
         .insert({
           workshop_id: registrationData.workshop_id,
@@ -184,8 +219,6 @@ export function useCreateWorkshopRegistration() {
           phone: registrationData.phone || null,
           note: registrationData.note || null,
         })
-        .select()
-        .single()
 
       if (error) throw error
 
@@ -209,7 +242,7 @@ export function useCreateWorkshopRegistration() {
         })
       }
 
-      return data
+      return { success: true }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['upcoming-workshops'] })

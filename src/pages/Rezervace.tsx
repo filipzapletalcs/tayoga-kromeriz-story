@@ -61,7 +61,7 @@ const Rezervace: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <ScheduleCalendar days={21} />
+          <ScheduleCalendar />
         </motion.div>
       </main>
 

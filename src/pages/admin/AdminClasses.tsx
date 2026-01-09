@@ -297,7 +297,11 @@ const AdminClasses: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-1">
                               <Users className="w-4 h-4" />
-                              {cls.capacity} míst
+                              <span>{cls.capacity} míst</span>
+                              <span className="text-muted-foreground/60">·</span>
+                              <span className={Math.max(0, cls.capacity - (cls.reserved_spots || 0)) === 0 ? 'text-destructive font-medium' : 'text-primary font-medium'}>
+                                {Math.max(0, cls.capacity - (cls.reserved_spots || 0))} volných
+                              </span>
                             </div>
                             {cls.lesson_count && (
                               <div className="flex items-center gap-1">

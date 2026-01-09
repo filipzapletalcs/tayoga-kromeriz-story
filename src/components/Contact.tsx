@@ -7,11 +7,13 @@ import { Label } from '@/components/ui/label';
 import { FormError, FormSuccess, FormFieldError } from '@/components/ui/form-error';
 import { FadeIn, AnimatedButton } from '@/components/ui/micro-interactions';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useOpeningHours, formatDayHours } from '@/hooks/useOpeningHours';
 
 const Contact = () => {
   const sectionRef = useRef<HTMLElement>(null);
+  const { data: openingHours, isLoading: hoursLoading } = useOpeningHours();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -142,11 +144,10 @@ const Contact = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-16 max-w-6xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-16 max-w-6xl mx-auto items-stretch">
           {/* Contact Information */}
-          <div className="space-y-8">
-            <div className="scroll-reveal">
-              <Card className="bg-card border-border card-shadow">
+          <div className="scroll-reveal h-full">
+            <Card className="bg-card border-border card-shadow h-full flex flex-col">
                 <CardHeader>
                   <CardTitle className="text-2xl font-serif text-foreground">
                     Studio TaYoga
@@ -155,56 +156,66 @@ const Contact = () => {
                     Vaše místo pro klid a rovnováhu v Kroměříži
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-start space-x-3">
-                    <MapPin className="w-5 h-5 text-primary mt-1" />
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-2">Adresa</h4>
-                      <p className="text-muted-foreground">
-                        Vodní ulice 53<br />
-                        767 01 Kroměříž
-                      </p>
-                    </div>
+                <CardContent className="space-y-6 flex-1">
+                <div className="flex items-start space-x-3">
+                  <MapPin className="w-5 h-5 text-primary mt-1" />
+                  <div>
+                    <h4 className="font-semibold text-foreground mb-2">Adresa</h4>
+                    <p className="text-muted-foreground">
+                      Vodní ulice 53<br />
+                      767 01 Kroměříž
+                    </p>
                   </div>
-                  
-                  <div className="flex items-start space-x-3">
-                    <Phone className="w-5 h-5 text-primary mt-1" />
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-2">Telefon</h4>
-                      <a href="tel:+420774515599" className="text-muted-foreground hover:text-primary transition-colors">+420 774 515 599</a>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-3">
-                    <Mail className="w-5 h-5 text-primary mt-1" />
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-2">Email</h4>
-                      <a href="mailto:barayoga001@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">barayoga001@gmail.com</a>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-3">
-                    <Clock className="w-5 h-5 text-primary mt-1" />
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-2">Otevírací doba</h4>
-                      <div className="text-muted-foreground space-y-1">
-                        <p>Pondělí: Zavřeno</p>
-                        <p>Úterý: 18:00 - 19:30</p>
-                        <p>Středa: 8:00 - 9:30, 10:00 - 11:30</p>
-                        <p>Čtvrtek: 16:15 - 17:45, 18:15 - 19:30</p>
-                        <p>Pátek: Zavřeno</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
 
+                <div className="flex items-start space-x-3">
+                  <Phone className="w-5 h-5 text-primary mt-1" />
+                  <div>
+                    <h4 className="font-semibold text-foreground mb-2">Telefon</h4>
+                    <a href="tel:+420774515599" className="text-muted-foreground hover:text-primary transition-colors">+420 774 515 599</a>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Mail className="w-5 h-5 text-primary mt-1" />
+                  <div>
+                    <h4 className="font-semibold text-foreground mb-2">Email</h4>
+                    <a href="mailto:barayoga001@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">barayoga001@gmail.com</a>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Clock className="w-5 h-5 text-primary mt-1" />
+                  <div>
+                    <h4 className="font-semibold text-foreground mb-2">Otevírací doba</h4>
+                    <div className="text-muted-foreground space-y-1">
+                      {hoursLoading ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Načítám...</span>
+                        </div>
+                      ) : openingHours ? (
+                        openingHours.map((day) => (
+                          <p key={day.dayIndex}>
+                            {day.dayName}: {formatDayHours(day.slots)}
+                          </p>
+                        ))
+                      ) : (
+                        <>
+                          <p>Pondělí - Pátek: dle rozvrhu</p>
+                          <p>Víkend: Zavřeno</p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Contact Form */}
-          <div className="scroll-reveal">
-            <Card className="bg-card border-border card-shadow">
+          <div className="scroll-reveal h-full">
+            <Card className="bg-card border-border card-shadow h-full flex flex-col">
               <CardHeader>
                 <CardTitle className="text-2xl font-serif text-foreground">
                   Napište nám
@@ -213,9 +224,9 @@ const Contact = () => {
                   Zanechte nám zprávu a my se vám ozveme co nejdříve
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <FadeIn>
-                  <form onSubmit={handleSubmit} className="space-y-6">
+              <CardContent className="flex-1 flex flex-col">
+                <FadeIn className="flex-1 flex flex-col">
+                  <form onSubmit={handleSubmit} className="flex-1 flex flex-col space-y-6">
                     {submitSuccess && (
                       <FormSuccess message="Zpráva byla úspěšně odeslána! Ozveme se vám co nejdříve." />
                     )}
@@ -267,7 +278,7 @@ const Contact = () => {
                       <FormFieldError error={errors.email} />
                     </div>
                     
-                    <div>
+                    <div className="flex-1 flex flex-col">
                       <Label htmlFor="message">Zpráva</Label>
                       <Textarea
                         id="message"
@@ -275,17 +286,17 @@ const Contact = () => {
                         rows={4}
                         value={formData.message}
                         onChange={(e) => handleInputChange('message', e.target.value)}
-                        className={errors.message ? 'border-destructive' : ''}
+                        className={`flex-1 min-h-[100px] ${errors.message ? 'border-destructive' : ''}`}
                         required
                         aria-required="true"
                         aria-invalid={!!errors.message}
                       />
                       <FormFieldError error={errors.message} />
                     </div>
-                    
+
                     <Button
-                      type="submit" 
-                      className="w-full"
+                      type="submit"
+                      className="w-full mt-auto"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? 'Odesílám...' : 'Odeslat zprávu'}

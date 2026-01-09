@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import type { ScheduleItem, LessonType } from '@/types/database'
-import { addDays, format, startOfDay, getDay, parseISO, isSameDay } from 'date-fns'
+import { addDays, format, startOfDay, getDay, parseISO, isSameDay, differenceInDays } from 'date-fns'
 
 export type FilterType = 'all' | 'recurring' | 'one_time' | 'workshop'
 
@@ -10,14 +10,15 @@ interface DaySchedule {
   items: ScheduleItem[]
 }
 
-export function useScheduleData(days: number = 14, filter: FilterType = 'all') {
+export function useScheduleData(startDate: Date, endDate: Date, filter: FilterType = 'all') {
   return useQuery({
-    queryKey: ['schedule-data', days, filter],
+    queryKey: ['schedule-data', format(startDate, 'yyyy-MM-dd'), format(endDate, 'yyyy-MM-dd'), filter],
     queryFn: async (): Promise<DaySchedule[]> => {
-      const today = startOfDay(new Date())
-      const todayStr = format(today, 'yyyy-MM-dd')
-      const endDate = addDays(today, days)
-      const endDateStr = format(endDate, 'yyyy-MM-dd')
+      const startDateNormalized = startOfDay(startDate)
+      const endDateNormalized = startOfDay(endDate)
+      const startDateStr = format(startDateNormalized, 'yyyy-MM-dd')
+      const endDateStr = format(endDateNormalized, 'yyyy-MM-dd')
+      const days = differenceInDays(endDateNormalized, startDateNormalized) + 1
 
       const scheduleItems: ScheduleItem[] = []
 
@@ -33,7 +34,7 @@ export function useScheduleData(days: number = 14, filter: FilterType = 'all') {
         if (recurringClasses?.length) {
           // Generate instances for each day
           for (let i = 0; i < days; i++) {
-            const date = addDays(today, i)
+            const date = addDays(startDateNormalized, i)
             const dayOfWeek = getDay(date)
             const dateStr = format(date, 'yyyy-MM-dd')
 
@@ -112,7 +113,7 @@ export function useScheduleData(days: number = 14, filter: FilterType = 'all') {
           .from('one_time_classes')
           .select('*')
           .eq('is_active', true)
-          .gte('date', todayStr)
+          .gte('date', startDateStr)
           .lte('date', endDateStr)
           .order('date', { ascending: true })
 
@@ -151,7 +152,7 @@ export function useScheduleData(days: number = 14, filter: FilterType = 'all') {
           .from('workshops')
           .select('*')
           .eq('is_active', true)
-          .gte('date', todayStr)
+          .gte('date', startDateStr)
           .lte('date', endDateStr)
           .order('date', { ascending: true })
 
@@ -188,7 +189,7 @@ export function useScheduleData(days: number = 14, filter: FilterType = 'all') {
       const dateMap = new Map<string, ScheduleItem[]>()
 
       for (let i = 0; i < days; i++) {
-        const date = addDays(today, i)
+        const date = addDays(startDateNormalized, i)
         const dateKey = format(date, 'yyyy-MM-dd')
         dateMap.set(dateKey, [])
       }
@@ -205,7 +206,7 @@ export function useScheduleData(days: number = 14, filter: FilterType = 'all') {
       const result: DaySchedule[] = []
 
       for (let i = 0; i < days; i++) {
-        const date = addDays(today, i)
+        const date = addDays(startDateNormalized, i)
         const dateKey = format(date, 'yyyy-MM-dd')
         const items = dateMap.get(dateKey) || []
 

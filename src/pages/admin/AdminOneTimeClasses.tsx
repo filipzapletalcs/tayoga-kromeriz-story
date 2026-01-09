@@ -272,12 +272,11 @@ const AdminOneTimeClasses: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
-                        <span className={(cls.registeredCount + (cls.reserved_spots || 0)) >= cls.capacity ? 'text-destructive font-medium' : ''}>
-                          {cls.registeredCount + (cls.reserved_spots || 0)}/{cls.capacity}
+                        <span>{cls.capacity} míst</span>
+                        <span className="text-muted-foreground/60">·</span>
+                        <span className={Math.max(0, cls.capacity - cls.registeredCount - (cls.reserved_spots || 0)) === 0 ? 'text-destructive font-medium' : 'text-primary font-medium'}>
+                          {Math.max(0, cls.capacity - cls.registeredCount - (cls.reserved_spots || 0))} volných
                         </span>
-                        {(cls.registeredCount + (cls.reserved_spots || 0)) >= cls.capacity && (
-                          <Badge variant="secondary" className="text-xs ml-1">Obsazeno</Badge>
-                        )}
                       </div>
                     </div>
 

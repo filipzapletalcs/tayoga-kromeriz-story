@@ -15,9 +15,9 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
       locale={cs}
       className={cn("p-3 w-full", className)}
       classNames={{
-        months: "w-full flex flex-col sm:flex-row sm:justify-center space-y-3 sm:space-x-6 sm:space-y-0",
-        month: "space-y-3",
-        caption: "flex justify-center pt-1 relative items-center",
+        months: "w-full flex flex-col sm:flex-row sm:justify-center space-y-4 sm:space-x-8 sm:space-y-0",
+        month: "space-y-4",
+        caption: "flex justify-center pt-1 relative items-center mb-2",
         caption_label: "text-base font-medium",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
@@ -26,14 +26,14 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         ),
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
-        table: "w-full border-collapse space-y-1",
-        head_row: "flex w-full",
-        head_cell: "flex-1 text-center text-muted-foreground rounded-md font-normal text-[0.82rem] md:text-sm",
-        row: "flex w-full mt-1",
-        cell: "flex-1 text-center text-sm p-0 relative flex items-center justify-center [&:has([aria-selected].day-range-end)]:rounded-r-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        table: "w-full border-collapse",
+        head_row: "flex w-full gap-1",
+        head_cell: "flex-1 text-center text-muted-foreground rounded-md font-normal text-[0.82rem] md:text-sm pb-2",
+        row: "flex w-full gap-1 mt-1",
+        cell: "flex-1 text-center text-sm p-0.5 relative flex items-center justify-center [&:has([aria-selected].day-range-end)]:rounded-r-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 sm:h-10 sm:w-10 md:h-10 md:w-10 lg:h-10 lg:w-10 p-0 font-normal aria-selected:opacity-100",
+          "h-8 w-8 sm:h-9 sm:w-9 p-0 font-normal aria-selected:opacity-100 rounded-lg",
         ),
         day_range_end: "day-range-end",
         day_selected:

@@ -45,10 +45,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import {
-  useWorkshops,
+  useWorkshopsWithCounts,
   useCreateWorkshop,
   useUpdateWorkshop,
-  useDeleteWorkshop
+  useDeleteWorkshop,
+  type WorkshopWithCount
 } from '@/hooks/useWorkshops'
 import { format } from 'date-fns'
 import { cs } from 'date-fns/locale'
@@ -57,7 +58,7 @@ import InlineDatePicker from '@/components/admin/InlineDatePicker'
 
 const AdminWorkshops: React.FC = () => {
   const navigate = useNavigate()
-  const { data: workshops, isLoading } = useWorkshops()
+  const { data: workshops, isLoading } = useWorkshopsWithCounts()
   const createWorkshop = useCreateWorkshop()
   const updateWorkshop = useUpdateWorkshop()
   const deleteWorkshop = useDeleteWorkshop()
@@ -271,7 +272,11 @@ const AdminWorkshops: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
-                        {workshop.capacity} míst
+                        <span>{workshop.capacity} míst</span>
+                        <span className="text-muted-foreground/60">·</span>
+                        <span className={Math.max(0, workshop.capacity - workshop.registeredCount - (workshop.reserved_spots || 0)) === 0 ? 'text-destructive font-medium' : 'text-primary font-medium'}>
+                          {Math.max(0, workshop.capacity - workshop.registeredCount - (workshop.reserved_spots || 0))} volných
+                        </span>
                       </div>
                     </div>
 

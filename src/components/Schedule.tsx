@@ -1,81 +1,96 @@
-import React from 'react';
-import { Calendar as CalendarIcon, Clock, CreditCard, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useCallback, lazy, Suspense } from 'react';
+import { Calendar as CalendarIcon, Clock, CreditCard, Info, Loader2, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollReveal, fadeUpVariants } from '@/components/ui/scroll-animations';
 import { motion } from 'framer-motion';
 import { Calendar } from '@/components/ui/calendar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { format, addMonths, startOfDay } from 'date-fns';
+import { useUpcomingSchedule, getLessonWithRegistrations } from '@/hooks/useUpcomingSchedule';
+import type { ScheduleItem } from '@/types/database';
+
+// Lazy load components that need Supabase
+const LessonPicker = lazy(() => import('@/components/LessonPicker'));
+const LessonDetailModal = lazy(() => import('@/components/reservation/LessonDetailModal'));
 
 const Schedule = () => {
-  // Responsivní počet kalendářů: na mobilu 1, na větších 2
+  // Responsive months count
   const initialMonths = typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches ? 1 : 2;
   const [months, setMonths] = React.useState(initialMonths);
-  const [active, setActive] = React.useState<'tue' | 'wed' | 'thu'>('tue');
-  const order: Array<'tue'|'wed'|'thu'> = ['tue','wed','thu'];
-  const go = (dir: -1 | 1) => {
-    const idx = order.indexOf(active);
-    const next = (idx + dir + order.length) % order.length;
-    setActive(order[next]);
-  };
+
+  // Data from hook
+  const { weeklySchedule, lessonsByDate, lessonDates, isLoading, error } = useUpcomingSchedule(6);
+
+  // Modal states
+  const [selectedLesson, setSelectedLesson] = useState<ScheduleItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Picker state (for multiple lessons on same day)
+  const [pickerDate, setPickerDate] = useState<Date | null>(null);
+  const [pickerItems, setPickerItems] = useState<ScheduleItem[]>([]);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+
+  // Loading state for single lesson click
+  const [loadingDay, setLoadingDay] = useState<string | null>(null);
+
+  // Responsive listener
   React.useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return;
     const mq = window.matchMedia('(max-width: 640px)');
     const update = () => setMonths(mq.matches ? 1 : 2);
     update();
-    // @ts-ignore older browsers fallback
-    mq.addEventListener ? mq.addEventListener('change', update) : mq.addListener(update);
+    mq.addEventListener?.('change', update) ?? mq.addListener?.(update);
     return () => {
-      // @ts-ignore older browsers fallback
-      mq.removeEventListener ? mq.removeEventListener('change', update) : mq.removeListener(update);
+      mq.removeEventListener?.('change', update) ?? mq.removeListener?.(update);
     };
   }, []);
-  const weeklySchedule = [
-    { day: 'Pondělí', slots: [] },
-    { day: 'Úterý', slots: [{ time: '18:00 - 19:30', type: 'kurz', label: 'Kurz pokročilí' }] },
-    { day: 'Středa', slots: [
-      { time: '8:00 - 9:30', type: 'kurz', label: 'Kurz senioři' },
-      { time: '10:00 - 11:30', type: 'kurz', label: 'Kurz začátečníci' }
-    ]},
-    { day: 'Čtvrtek', slots: [
-      { time: '16:15 - 17:45', type: 'kurz', label: 'Kurz pokročilí' },
-      { time: '18:15 - 19:30', type: 'kurz', label: 'Otevřená lekce' }
-    ]},
-    { day: 'Pátek', slots: [] },
-  ];
 
-  // Detailní rozpis termínů pro 1. pololetí 2025/26
-  const detailedSchedule = {
-    tuesday: [
-      { month: 'Září', dates: '23, 30' },
-      { month: 'Říjen', dates: '7, 14, 21' },
-      { month: 'Listopad', dates: '4, 11, 18, 25' },
-      { month: 'Prosinec', dates: '2, 9, 16' },
-      { month: 'Leden', dates: '6, 13, 20' }
-    ],
-    wednesday: [
-      { month: 'Září', dates: '24' },
-      { month: 'Říjen', dates: '1, 8, 15, 22, 29' },
-      { month: 'Listopad', dates: '5, 12, 19, 26' },
-      { month: 'Prosinec', dates: '3, 10, 17' },
-      { month: 'Leden', dates: '7, 14, 21' }
-    ],
-    thursday: [
-      { month: 'Září', dates: '25' },
-      { month: 'Říjen', dates: '2, 9, 16, 23, 30' },
-      { month: 'Listopad', dates: '13, 20, 27' },
-      { month: 'Prosinec', dates: '4, 11, 18' },
-      { month: 'Leden', dates: '8, 15, 22' }
-    ]
-  };
+  // Handle day click on calendar
+  const handleDayClick = useCallback(async (day: Date) => {
+    const dateKey = format(day, 'yyyy-MM-dd');
+    const items = lessonsByDate.get(dateKey);
 
+    if (!items || items.length === 0) return;
+
+    if (items.length === 1) {
+      // Single lesson - load details and open modal directly
+      setLoadingDay(dateKey);
+      try {
+        const fullItem = await getLessonWithRegistrations(items[0]);
+        setSelectedLesson(fullItem);
+        setIsModalOpen(true);
+      } catch (err) {
+        console.error('Error loading lesson:', err);
+        // Fall back to basic info
+        setSelectedLesson(items[0]);
+        setIsModalOpen(true);
+      } finally {
+        setLoadingDay(null);
+      }
+    } else {
+      // Multiple lessons - show picker
+      setPickerDate(day);
+      setPickerItems(items);
+      setIsPickerOpen(true);
+    }
+  }, [lessonsByDate]);
+
+  // Handle lesson selection from picker
+  const handleSelectLesson = useCallback((item: ScheduleItem) => {
+    setSelectedLesson(item);
+    setIsModalOpen(true);
+  }, []);
+
+  // Calendar date range
+  const today = startOfDay(new Date());
+  const monthEnd = addMonths(today, 6);
 
   return (
     <section id="schedule" className="relative py-20 px-4 bg-gradient-to-br from-secondary/20 via-background to-accent/10 dark:from-background dark:via-card/50 dark:to-background">
       <div className="max-w-7xl mx-auto">
-        {/* Nadpis sekce */}
+        {/* Section header */}
         <ScrollReveal>
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-4">
@@ -87,279 +102,288 @@ const Schedule = () => {
           </div>
         </ScrollReveal>
 
-        {/* Grid layout s sticky levým panelem */}
+        {/* Grid layout */}
         <div className="lg:grid lg:grid-cols-[450px,1fr] lg:gap-8 lg:items-start">
-          {/* Levý sticky panel - Týdenní rozvrh */}
+          {/* Left sticky panel - Weekly schedule */}
           <div className="lg:sticky lg:top-24 mb-8 lg:mb-0">
             <ScrollReveal delay={0.1} variants={fadeUpVariants}>
               <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
                 <Card className="h-full shadow-lg hover:shadow-xl transition-all duration-300 bg-card/90 backdrop-blur-sm border-primary/10">
-                <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-t-lg">
-                  <CardTitle className="flex items-center gap-2 text-2xl font-serif text-foreground">
-                    <CalendarIcon className="w-6 h-6 text-primary" />
-                    Týdenní rozvrh
-                  </CardTitle>
-                  <CardDescription className="text-muted-foreground">Pravidelné lekce během týdne</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    {weeklySchedule.map((day, dayIdx) => (
-                      <motion.div
-                        key={day.day}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: dayIdx * 0.05 }}
-                        className="flex border-b border-border/50 pb-3 last:border-0"
-                      >
-                        <div className="w-28 font-semibold text-foreground">{day.day}</div>
-                        <div className="flex-1">
-                          {day.slots.length > 0 ? (
-                            <div className="space-y-2">
-                              {day.slots.map((slot, idx) => (
-                                <div key={idx} className="flex items-center gap-3">
-                                  <Clock className="w-4 h-4 text-primary/60" />
-                                  <span className="text-muted-foreground">{slot.time}</span>
-                                  <Badge
-                                    variant={slot.type === 'open' ? 'default' : 'secondary'}
-                                    className={slot.type === 'open' ? 'bg-primary text-primary-foreground hover:bg-primary/90 text-center' : 'bg-accent text-accent-foreground text-center'}
-                                  >
-                                    {slot.label}
-                                  </Badge>
-                                </div>
-                              ))}
+                  <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-t-lg">
+                    <CardTitle className="flex items-center gap-2 text-2xl font-serif text-foreground">
+                      <CalendarIcon className="w-6 h-6 text-primary" />
+                      Týdenní rozvrh
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground">Pravidelné lekce během týdne</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    {isLoading ? (
+                      // Loading skeleton
+                      <div className="space-y-4">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <div key={i} className="flex border-b border-border/50 pb-3">
+                            <Skeleton className="w-28 h-5" />
+                            <div className="flex-1 space-y-2">
+                              <Skeleton className="h-5 w-3/4" />
                             </div>
-                          ) : (
-                            <span className="text-muted-foreground/50">-</span>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : error ? (
+                      // Error state
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p>Nepodařilo se načíst rozvrh</p>
+                      </div>
+                    ) : (
+                      // Weekly schedule - elegant grid layout (only days with lessons)
+                      <div className="space-y-0">
+                        {weeklySchedule.filter(day => day.slots.length > 0).map((day, dayIdx) => (
+                          <motion.div
+                            key={day.day}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: dayIdx * 0.04 }}
+                            className="grid grid-cols-[90px_1fr] gap-3 py-3 border-b border-border/40 last:border-0"
+                          >
+                            {/* Day name - fixed width, aligned top */}
+                            <div className="font-semibold text-foreground/90 pt-0.5">
+                              {day.day}
+                            </div>
 
-                  <Alert className="mt-6 bg-primary/10 border-primary/30 dark:bg-primary/20">
-                    <Info className="h-4 w-4 text-primary" />
-                    <AlertDescription className="text-sm font-medium">
-                      <strong className="text-foreground">Rezervace předem nutná!</strong>
-                      <br />
-                      <span className="text-muted-foreground">Na otevřené lekce se prosím hlaste telefonicky nebo emailem.</span>
-                    </AlertDescription>
-                  </Alert>
-                </CardContent>
+                            {/* Lessons column */}
+                            <div>
+                              {day.slots.length > 0 ? (
+                                <div className="space-y-2.5">
+                                  {day.slots.map((slot, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="group relative pl-3 border-l-2 border-primary/30 hover:border-primary/60 transition-colors"
+                                    >
+                                      {/* Lesson name */}
+                                      <div className="text-foreground font-medium leading-snug">
+                                        {slot.label}
+                                      </div>
+                                      {/* Time */}
+                                      <div className="flex items-center gap-1.5 mt-0.5 text-sm text-muted-foreground">
+                                        <Clock className="w-3 h-3 text-primary/50" />
+                                        <span>{slot.time}</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground/40 italic">—</span>
+                              )}
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+
+                    <Alert className="mt-6 bg-primary/10 border-primary/30 dark:bg-primary/20">
+                      <Info className="h-4 w-4 text-primary" />
+                      <AlertDescription className="text-sm font-medium">
+                        <strong className="text-foreground">Rezervace předem nutná!</strong>
+                        <br />
+                        <span className="text-muted-foreground">Klikněte na den v kalendáři pro rezervaci.</span>
+                      </AlertDescription>
+                    </Alert>
+                  </CardContent>
                 </Card>
               </motion.div>
             </ScrollReveal>
           </div>
 
-          {/* Pravý scrollovací panel - Detailní rozpis jako kalendář */}
-          <ScrollReveal delay={0.2} variants={fadeUpVariants}>
-            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+          {/* Right panel - Alert + Interactive calendar */}
+          <ScrollReveal delay={0.2} variants={fadeUpVariants} className="flex flex-col h-full">
+            {/* Studio closure alert */}
+            <div className="mb-4">
+              <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-foreground text-sm mb-1">Upozornění</h4>
+                    <p className="text-sm text-muted-foreground">
+                      V termínu <span className="font-medium text-foreground">26. 1. až 16. 2.</span> je studio uzavřeno.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Calendar card */}
+            <motion.div whileHover={{ scale: 1.01 }} transition={{ duration: 0.2 }} className="flex-1">
               <Card className="h-full shadow-lg hover:shadow-xl transition-all duration-300 bg-card/80 backdrop-blur-sm border-accent/10">
                 <CardHeader className="bg-gradient-to-r from-accent/10 to-secondary/10 rounded-t-lg">
                   <CardTitle className="flex items-center gap-2 text-2xl font-serif text-foreground">
                     <Clock className="w-6 h-6 text-primary" />
-                    Detailní rozpis kurzů dle jednotlivých dnů
+                    Kalendář lekcí
                   </CardTitle>
-                  <CardDescription className="text-muted-foreground">1. pololetí 2025/26</CardDescription>
+                  <CardDescription className="text-muted-foreground">
+                    Klikněte na zvýrazněný den pro rezervaci
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
-                  {/** Přepínač kurzů */}
-                  <Tabs value={active} onValueChange={(v) => setActive(v as any)} className="w-full">
-                    {/* Desktop/Tablet: klasické taby */}
-                    <TabsList className="hidden sm:grid grid-cols-3 w-full">
-                      <TabsTrigger
-                        value="tue"
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
-                      >
-                        Úterý 18:00
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="wed"
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
-                      >
-                        Středa 8:00/10:00
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="thu"
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
-                      >
-                        Čtvrtek 16:15
-                      </TabsTrigger>
-                    </TabsList>
-
-                    {/* Mobile: šipky + aktuální kurz */}
-                    <div className="sm:hidden flex items-center justify-between gap-3 mt-1">
-                      <Button variant="outline" size="icon" aria-label="Předchozí kurz" onClick={() => go(-1)}>
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <div className="flex-1 text-center">
-                        <span className="inline-block rounded-full border px-3 py-1 text-sm bg-primary/20 border-primary/40 text-foreground font-medium">
-                          {active === 'tue' && 'Úterý 18:00'}
-                          {active === 'wed' && 'Středa 8:00/10:00'}
-                          {active === 'thu' && 'Čtvrtek 16:15'}
-                        </span>
-                      </div>
-                      <Button variant="outline" size="icon" aria-label="Další kurz" onClick={() => go(1)}>
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
+                  {isLoading ? (
+                    // Loading skeleton for calendar
+                    <div className="space-y-4">
+                      <Skeleton className="h-8 w-32 mx-auto" />
+                      <Skeleton className="h-64 w-full" />
                     </div>
+                  ) : error ? (
+                    // Error state
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>Nepodařilo se načíst kalendář</p>
+                    </div>
+                  ) : lessonDates.length === 0 ? (
+                    // Empty state
+                    <div className="text-center py-8 text-muted-foreground">
+                      <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>Žádné nadcházející lekce</p>
+                    </div>
+                  ) : (
+                    // Interactive calendar
+                    <div className="space-y-4">
+                      <Calendar
+                        mode="multiple"
+                        selected={lessonDates}
+                        defaultMonth={today}
+                        fromMonth={today}
+                        toMonth={monthEnd}
+                        numberOfMonths={months}
+                        onDayClick={handleDayClick}
+                        modifiers={{
+                          hasLesson: lessonDates,
+                          loading: loadingDay ? [new Date(loadingDay)] : [],
+                        }}
+                        modifiersClassNames={{
+                          hasLesson: 'cursor-pointer hover:scale-110 transition-transform',
+                          loading: 'animate-pulse',
+                        }}
+                        disabled={(date) => {
+                          const dateKey = format(date, 'yyyy-MM-dd');
+                          return !lessonsByDate.has(dateKey) || (lessonsByDate.get(dateKey)?.length ?? 0) === 0;
+                        }}
+                        className="pointer-events-auto"
+                      />
 
-                    {/* Helper to render kalendář s vyznačenými dny */}
-                    {(() => {
-                      const monthStart = new Date(2025, 8, 1); // září 2025
-                      const monthEnd = new Date(2026, 0, 31);  // leden 2026
-
-                      const toDates = (items: { y: number; m: number; d: number[] }[]) =>
-                        items.flatMap(({ y, m, d }) => d.map((day) => new Date(y, m, day)));
-
-                      const tuesdayDates = toDates([
-                        { y: 2025, m: 8, d: [23, 30] },
-                        { y: 2025, m: 9, d: [7, 14, 21] },
-                        { y: 2025, m: 10, d: [4, 11, 18, 25] },
-                        { y: 2025, m: 11, d: [2, 9, 16] },
-                        { y: 2026, m: 0, d: [6, 13, 20] },
-                      ]);
-
-                      const wednesdayDates = toDates([
-                        { y: 2025, m: 8, d: [24] },
-                        { y: 2025, m: 9, d: [1, 8, 15, 22, 29] },
-                        { y: 2025, m: 10, d: [5, 12, 19, 26] },
-                        { y: 2025, m: 11, d: [3, 10, 17] },
-                        { y: 2026, m: 0, d: [7, 14, 21] },
-                      ]);
-
-                      const thursdayDates = toDates([
-                        { y: 2025, m: 8, d: [25] },
-                        { y: 2025, m: 9, d: [2, 9, 16, 23, 30] },
-                        { y: 2025, m: 10, d: [13, 20, 27] },
-                        { y: 2025, m: 11, d: [4, 11, 18] },
-                        { y: 2026, m: 0, d: [8, 15, 22] },
-                      ]);
-
-                      const renderCal = (dates: Date[]) => (
-                        <div className="mt-2 space-y-2">
-                          <Calendar
-                            mode="multiple"
-                            selected={dates}
-                            defaultMonth={monthStart}
-                            fromMonth={monthStart}
-                            toMonth={monthEnd}
-                            numberOfMonths={months}
-                          />
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span className="inline-block h-3 w-3 rounded-full bg-primary/60" />
-                            <span>Označené dny = konání lekce</span>
-                          </div>
+                      {/* Legend */}
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground pt-2 border-t border-border/50">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-block h-3 w-3 rounded-full bg-primary/60" />
+                          <span>Den s lekcí</span>
                         </div>
-                      );
+                        <div className="flex items-center gap-2">
+                          <span className="inline-block h-3 w-3 rounded-full bg-muted" />
+                          <span>Bez lekce</span>
+                        </div>
+                      </div>
 
-                      return (
-                        <>
-                          <TabsContent value="tue">
-                            <div className="flex justify-end">
-                              <Badge className="bg-primary/10 text-primary border-primary/20">{tuesdayDates.length} lekcí</Badge>
-                            </div>
-                            {renderCal(tuesdayDates)}
-                          </TabsContent>
-
-                          <TabsContent value="wed">
-                            <div className="flex justify-end">
-                              <Badge className="bg-accent/10 text-accent-foreground border-accent/20">{wednesdayDates.length} lekcí</Badge>
-                            </div>
-                            {renderCal(wednesdayDates)}
-                          </TabsContent>
-
-                          <TabsContent value="thu">
-                            <div className="flex justify-end">
-                              <Badge className="bg-secondary/10 text-secondary-foreground border-secondary/20">{thursdayDates.length} lekcí</Badge>
-                            </div>
-                            {renderCal(thursdayDates)}
-                          </TabsContent>
-                        </>
-                      );
-                    })()}
-                  </Tabs>
+                      {/* Loading indicator */}
+                      {loadingDay && (
+                        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Načítám detaily...</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
           </ScrollReveal>
         </div>
 
-        {/* Ceník - pod oběma panely */}
+        {/* Pricing section - refined */}
         <ScrollReveal delay={0.4} variants={fadeUpVariants} className="mt-12">
-          <motion.div whileHover={{ scale: 1.01 }} transition={{ duration: 0.3 }}>
-            <Card className="mt-8 shadow-xl bg-gradient-to-br from-primary/5 via-card to-accent/5 dark:from-card dark:to-card/80 border-primary/10">
-              <CardHeader className="bg-gradient-to-r from-primary/10 to-accent-gold/10 rounded-t-lg">
-                <CardTitle className="flex items-center gap-2 text-3xl font-serif text-foreground">
-                  <CreditCard className="w-7 h-7 text-primary" />
-                  Ceník
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-8">
-                <div className="grid md:grid-cols-2 gap-8">
-                  <motion.div
-                    whileHover={{ scale: 1.05, rotate: 1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                    className="relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 blur-2xl" />
-                    <div className="relative p-6 bg-card/90 backdrop-blur-sm rounded-xl border border-primary/20 shadow-md hover:shadow-lg transition-all duration-300">
-                      <h4 className="font-serif text-xl mb-4 text-foreground flex items-center gap-2">
-                        <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                        Otevřená lekce
-                      </h4>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-end">
-                          <span className="text-muted-foreground font-medium">75 minut</span>
-                          <div className="text-right">
-                            <span className="text-3xl font-bold bg-gradient-to-r from-primary to-accent-gold bg-clip-text text-transparent">250</span>
-                            <span className="text-lg text-muted-foreground ml-1">Kč</span>
-                          </div>
-                        </div>
-                        <div className="pt-3 border-t border-border/50">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Pro frekventanty kurzů:</span>
-                            <span className="font-semibold text-lg text-primary">210 Kč</span>
-                          </div>
-                          <Badge className="mt-2 bg-primary/10 text-primary border-primary/20">Ušetříte 40 Kč</Badge>
-                        </div>
-                        <div className="mt-3 p-2 bg-accent/5 rounded-lg">
-                          <p className="text-xs text-muted-foreground">
-                            <strong>Noví zájemci:</strong> 3 zkušební lekce za 210 Kč
-                          </p>
-                        </div>
-                      </div>
+          <Card className="shadow-lg bg-card/95 border-border/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-2xl font-serif text-foreground">
+                <CreditCard className="w-6 h-6 text-primary" />
+                Ceník
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Otevřená lekce */}
+                <div className="h-full p-5 rounded-xl border border-border/50 bg-background/50 hover:border-primary/40 hover:shadow-sm transition-all duration-300">
+                  <div className="flex items-start justify-between mb-4">
+                    <h4 className="font-serif text-lg font-semibold text-foreground">
+                      Otevřená lekce
+                    </h4>
+                    <div className="text-right">
+                      <span className="text-2xl font-bold text-primary">250</span>
+                      <span className="text-sm text-muted-foreground ml-1">Kč</span>
                     </div>
-                  </motion.div>
+                  </div>
 
-                  <motion.div
-                    whileHover={{ scale: 1.05, rotate: -1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                    className="relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-secondary/20 blur-2xl" />
-                    <div className="relative p-6 bg-card/90 backdrop-blur-sm rounded-xl border border-accent/20 shadow-md hover:shadow-lg transition-all duration-300">
-                      <h4 className="font-serif text-xl mb-4 text-foreground flex items-center gap-2">
-                        <span className="w-2 h-2 bg-accent-gold rounded-full animate-pulse" />
-                        Individuální lekce
-                      </h4>
-                      <div className="flex justify-between items-end">
-                        <span className="text-muted-foreground font-medium">60 minut</span>
-                        <div className="text-right">
-                          <span className="text-3xl font-bold bg-gradient-to-r from-accent-gold to-primary bg-clip-text text-transparent">1000</span>
-                          <span className="text-lg text-muted-foreground ml-1">Kč</span>
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-3 border-t border-border/50">
-                        <Badge className="bg-accent/10 text-accent-foreground border-accent/20">Osobní přístup</Badge>
-                      </div>
+                  <p className="text-sm text-muted-foreground mb-4">75 minut</p>
+
+                  <div className="space-y-2 pt-3 border-t border-border/40">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Pro frekventanty kurzů</span>
+                      <span className="font-medium text-primary">210 Kč</span>
                     </div>
-                  </motion.div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">3 zkušební lekce</span>
+                      <span className="font-medium text-foreground">210 Kč</span>
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+
+                {/* Individuální lekce */}
+                <div className="h-full p-5 rounded-xl border border-border/50 bg-background/50 hover:border-primary/40 hover:shadow-sm transition-all duration-300">
+                  <div className="flex items-start justify-between mb-4">
+                    <h4 className="font-serif text-lg font-semibold text-foreground">
+                      Individuální lekce
+                    </h4>
+                    <div className="text-right">
+                      <span className="text-2xl font-bold text-primary">1000</span>
+                      <span className="text-sm text-muted-foreground ml-1">Kč</span>
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground mb-4">60 minut</p>
+
+                  <div className="space-y-2 pt-3 border-t border-border/40">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span className="w-1 h-1 bg-primary/60 rounded-full" />
+                      Osobní přístup
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span className="w-1 h-1 bg-primary/60 rounded-full" />
+                      Lekce na míru
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </ScrollReveal>
       </div>
+
+      {/* Lazy loaded modals */}
+      <Suspense fallback={null}>
+        {/* Lesson picker for multiple lessons */}
+        {pickerDate && (
+          <LessonPicker
+            items={pickerItems}
+            date={pickerDate}
+            open={isPickerOpen}
+            onOpenChange={setIsPickerOpen}
+            onSelectLesson={handleSelectLesson}
+          />
+        )}
+
+        {/* Lesson detail modal */}
+        <LessonDetailModal
+          item={selectedLesson}
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+        />
+      </Suspense>
     </section>
   );
 };
