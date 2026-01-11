@@ -99,10 +99,21 @@ export function useUpcomingSchedule(monthsAhead: number = 6): UpcomingScheduleDa
 
       if (oneTimeError) throw oneTimeError
 
+      // Fetch cancelled instances for recurring classes
+      const { data: cancelledInstances, error: cancelledError } = await supabase
+        .from('class_instances')
+        .select('recurring_class_id, date')
+        .eq('is_cancelled', true)
+        .gte('date', format(today, 'yyyy-MM-dd'))
+        .lte('date', format(endDate, 'yyyy-MM-dd'))
+
+      if (cancelledError) throw cancelledError
+
       return {
         recurringClasses: recurringClasses || [],
         workshops: workshops || [],
         oneTimeClasses: oneTimeClasses || [],
+        cancelledInstances: cancelledInstances || [],
       }
     },
     staleTime: 60000, // 1 minute
@@ -130,12 +141,21 @@ export function useUpcomingSchedule(monthsAhead: number = 6): UpcomingScheduleDa
   const lessonsByDate = new Map<string, ScheduleItem[]>()
   const allDates: Date[] = []
 
+  // Create set of cancelled keys for O(1) lookup
+  const cancelledKeys = new Set(
+    data?.cancelledInstances?.map(ci => `${ci.recurring_class_id}-${ci.date}`) || []
+  )
+
   if (data?.recurringClasses) {
     for (const rc of data.recurringClasses) {
       const dates = generateRecurringDates(rc.day_of_week, today, endDate)
 
       for (const date of dates) {
         const dateKey = format(date, 'yyyy-MM-dd')
+
+        // Skip cancelled instances
+        if (cancelledKeys.has(`${rc.id}-${dateKey}`)) continue
+
         const existing = lessonsByDate.get(dateKey) || []
 
         existing.push({

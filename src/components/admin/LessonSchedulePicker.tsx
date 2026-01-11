@@ -224,6 +224,7 @@ export function LessonSchedulePicker({
         // Invalidate queries
         queryClient.invalidateQueries({ queryKey: ['schedule-data'] })
         queryClient.invalidateQueries({ queryKey: ['class-instances'] })
+        queryClient.invalidateQueries({ queryKey: ['upcoming-schedule'] })
       } catch (err) {
         console.error('Error toggling date:', err)
         setError('Nepodařilo se změnit termín')

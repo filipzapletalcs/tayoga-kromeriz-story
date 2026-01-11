@@ -258,7 +258,12 @@ const Header: React.FC = () => {
                     <span className="h-[2px] w-6 rounded bg-primary/60" aria-hidden />
                   </button>
                 ))}
-                <Link to="/rezervace" className="mt-2" aria-label="Rezervovat lekci">
+                <Link
+                  to="/rezervace"
+                  className="mt-2"
+                  aria-label="Rezervovat lekci"
+                  onClick={() => setMobileOpen(false)}
+                >
                   <Button className="w-full">
                     <Phone className="mr-2 h-4 w-4" /> Rezervovat lekci
                   </Button>

@@ -155,6 +155,7 @@ export function RecurringClassSchedulePreview({
       queryClient.invalidateQueries({ queryKey: ['upcoming-classes'] })
       queryClient.invalidateQueries({ queryKey: ['class-instances'] })
       queryClient.invalidateQueries({ queryKey: ['schedule-data'] })
+      queryClient.invalidateQueries({ queryKey: ['upcoming-schedule'] })
     } catch (err) {
       console.error('Error toggling instance:', err)
       setError('Nepodařilo se změnit stav termínu')
